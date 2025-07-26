@@ -28,8 +28,24 @@ namespace WebApi.Controllers
             _defaultValues = new DefaultValues();
         }
 
+        [HttpGet("ruhsat-turu")]
+        public async Task<ActionResult<IEnumerable<RuhsatTuru>>> GetRuhsatTurus()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var ruhsatTurus = await _ruhsatService.GetRuhsatTuru();
+
+            var ruhsatTurusList = ruhsatTurus.Select(ruhsatTuru => new RuhsatTuru
+            {
+                Id = ruhsatTuru.Id,
+                Name = ruhsatTuru.Name
+            }).ToList();
+
+            return Ok(ruhsatTurusList);
+        }
+
         [HttpGet("activities")]
-        public async Task<ActionResult<IEnumerable<Activities>>> GetSchemas()
+        public async Task<ActionResult<IEnumerable<Activities>>> GetActivities()
         {
             var userId = UserId();
             var user = _userService.GetUserById(userId);
@@ -95,6 +111,82 @@ namespace WebApi.Controllers
             foreach (var delete in templatesToRemove)
             {
                 _ruhsatService.IsDeletedFaaliyetKonusu(delete.Id);
+            }
+
+            return Ok(1);
+        }
+
+        [HttpGet("classes")]
+        public async Task<ActionResult<IEnumerable<Classes>>> GetClasses()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var classes = await _ruhsatService.GetRuhsatSinifi(user.OrganizationId);
+
+            var classesList = classes.Select(classs => new Classes
+            {
+                Id = classs.Id,
+                Name = classs.Name,
+                RuhsatTuruId = classs.RuhsatTuruId,
+            }).ToList();
+
+            return Ok(classesList);
+        }
+
+        [HttpPost]
+        [Route("add-classes")]
+        public async Task<IActionResult> AddClasses([FromBody] AddClassesRequest request)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+
+            var existingClasses = await _ruhsatService.GetRuhsatSinifi(user.OrganizationId);
+
+            var incomingClasses = request.Name;
+
+            var templatesToUpdate = new List<ClassDto>();
+            var templatesToAdd = new List<ClassDto>();
+
+            foreach (var incoming in incomingClasses)
+            {
+                if (incoming.Id.HasValue)
+                {
+                    var match = existingClasses.FirstOrDefault(e => e.Id == incoming.Id.Value);
+                    if (match != null)
+                    {
+                        var ruhsatTuruChanged = match.RuhsatTuruId != incoming.RuhsatTuruId;
+                        var nameChanged = !string.Equals(match.Name, incoming.Name, StringComparison.Ordinal);
+
+                        if (nameChanged || ruhsatTuruChanged)
+                        {
+                            templatesToUpdate.Add(incoming);
+                        }
+                    }
+                }
+                else
+                {
+                    templatesToAdd.Add(incoming);
+                }
+            }
+
+            var incomingIds = incomingClasses.Where(x => x.Id.HasValue).Select(x => x.Id.Value).ToList();
+            var templatesToRemove = existingClasses
+                .Where(e => !incomingIds.Contains(e.Id))
+                .ToList();
+
+            foreach (var add in templatesToAdd)
+            {
+                _ruhsatService.AddRuhsatSinifi(user.OrganizationId, add.Name, add.RuhsatTuruId);
+            }
+
+            foreach (var update in templatesToUpdate)
+            {
+                _ruhsatService.UpdateRuhsatSinifi(update.Id.Value, update.Name, update.RuhsatTuruId);
+            }
+
+            foreach (var delete in templatesToRemove)
+            {
+                _ruhsatService.IsDeletedRuhsatSinifi(delete.Id);
             }
 
             return Ok(1);

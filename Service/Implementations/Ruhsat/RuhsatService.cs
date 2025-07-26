@@ -75,6 +75,72 @@ namespace Service.Implementations.Ruhsat
             return data;
         }
         #endregion
+
+        #region RuhsatTürü
+        public async Task<IEnumerable<RuhsatTuru>> GetRuhsatTuru()
+        {
+            var data = _repository.FilterAsQueryable<RuhsatTuru>(p => !p.IsDeleted);
+            return data;
+        }
+        #endregion
+
+        #region RuhsatSınıfı
+        public int AddRuhsatSinifi(int organizationId, string name, int ruhsatTuruId)
+        {
+            var ruhsatSinifi = new RuhsatSinifi
+            {
+                Name = name,
+                OrganizationId = organizationId,
+                RuhsatTuruId = ruhsatTuruId,
+                InsertedDate = DateTime.UtcNow,
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            _repository.Save(ruhsatSinifi);
+            return ruhsatSinifi.Id;
+        }
+
+        public int UpdateRuhsatSinifi(int id, string name, int ruhsatTuruId)
+        {
+            var ruhsatSinifi = GetRuhsatSinifiById(id);
+            if (ruhsatSinifi != null)
+            {
+                ruhsatSinifi.Name = name;
+                ruhsatSinifi.RuhsatTuruId = ruhsatTuruId;
+                ruhsatSinifi.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(ruhsatSinifi);
+                return ruhsatSinifi.Id;
+            }
+            return 0;
+        }
+
+        public int IsDeletedRuhsatSinifi(int id)
+        {
+            var ruhsatSinifi = GetRuhsatSinifiById(id);
+            if (ruhsatSinifi != null)
+            {
+                ruhsatSinifi.IsDeleted = !ruhsatSinifi.IsDeleted;
+                ruhsatSinifi.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(ruhsatSinifi);
+                return ruhsatSinifi.Id;
+            }
+            return 0;
+        }
+
+        public RuhsatSinifi GetRuhsatSinifiById(int id)
+        {
+            return _repository.GetById<RuhsatSinifi>(id);
+        }
+
+        public async Task<IEnumerable<RuhsatSinifi>> GetRuhsatSinifi(int organizationId)
+        {
+            var data = _repository.FilterAsQueryable<RuhsatSinifi>(p => !p.IsDeleted && p.Organization.Id.Equals(organizationId)).IncludeRuhsatSinifi();
+            return data;
+        }
+        #endregion
     }
 
     public static class RuhsatExtensions
@@ -83,6 +149,13 @@ namespace Service.Implementations.Ruhsat
         {
             return query
                 .Include(ma => ma.Organization);
+        }
+
+        public static IQueryable<RuhsatSinifi> IncludeRuhsatSinifi(this IQueryable<RuhsatSinifi> query)
+        {
+            return query
+                .Include(ma => ma.Organization)
+                .Include(ma => ma.RuhsatTuru);
         }
     }
 }
