@@ -2,6 +2,7 @@ using Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository.Implementations;
+using Service.Implementations.Ruhsat;
 using Service.Implementations.User;
 using System.Text;
 using Utilities.Helper;
@@ -52,6 +53,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<RuhsatService>();
 builder.Services.AddScoped(typeof(Repository<>));
 builder.Services.AddScoped<JwtService>();
 Sql.Initialize(connectionString);

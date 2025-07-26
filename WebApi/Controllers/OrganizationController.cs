@@ -12,6 +12,7 @@ using Utilities.Helper;
 
 namespace WebApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrganizationController : ControllerBase

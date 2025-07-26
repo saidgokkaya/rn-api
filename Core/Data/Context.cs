@@ -1,4 +1,5 @@
-﻿using Core.Domain.User;
+﻿using Core.Domain.Ruhsat;
+using Core.Domain.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
@@ -47,6 +48,12 @@ namespace Core.Data
         public DbSet<User> User { get; set; }
         public DbSet<Role> Role { get; set; }
         public DbSet<UserRole> UserRole { get; set; }
+        public DbSet<Ruhsat> Ruhsat { get; set; }
+        public DbSet<RuhsatSinifi> RuhsatSinifi { get; set; }
+        public DbSet<RuhsatTuru> RuhsatTuru { get; set; }
+        public DbSet<FaaliyetKonusu> FaaliyetKonusu { get; set; }
+        public DbSet<Depo> Depo { get; set; }
+        public DbSet<DepoBilgi> DepoBilgi { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,6 +69,36 @@ namespace Core.Data
                 .HasOne(ur => ur.Role)
                 .WithMany(r => r.UserRole)
                 .HasForeignKey(ur => ur.RoleId);
+
+            modelBuilder.Entity<Ruhsat>()
+                .HasOne(r => r.Organization)
+                .WithMany(o => o.Ruhsat)
+                .HasForeignKey(r => r.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Ruhsat>()
+                .HasOne(r => r.RuhsatSinifi)
+                .WithMany(rs => rs.Ruhsat)
+                .HasForeignKey(r => r.RuhsatSinifiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DepoBilgi>()
+                .HasOne(db => db.Organization)
+                .WithMany(o => o.DepoBilgi)
+                .HasForeignKey(db => db.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DepoBilgi>()
+                .HasOne(db => db.Ruhsat)
+                .WithMany(r => r.DepoBilgi)
+                .HasForeignKey(db => db.RuhsatId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Depo>()
+                .HasOne(d => d.RuhsatSinifi)
+                .WithMany(rs => rs.Depo)
+                .HasForeignKey(d => d.RuhsatSinifiId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
