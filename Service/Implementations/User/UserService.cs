@@ -215,11 +215,11 @@ namespace Service.Implementations.User
             return data;
         }
 
-		public IEnumerable<Core.Domain.User.User> GetUserCheckMail(string mail)
+		public IEnumerable<Core.Domain.User.User> GetUserCheckMail(string mail, int id)
 		{
 			var data = _repository
 				.FilterAsQueryable<Core.Domain.User.User>(
-					p => !p.IsDeleted && p.Mail == mail)
+					p => !p.IsDeleted && p.Mail == mail && p.Id != id)
 				.IncludeUser();
 			return data;
 		}

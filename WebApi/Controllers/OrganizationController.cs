@@ -34,7 +34,7 @@ namespace WebApi.Controllers
         [HttpPost("check-mail-me")]
         public async Task<IActionResult> CheckMailMe([FromBody] CheckMailRequest request)
         {
-            var userCheck = _userService.GetUserCheckMail(request.Mail).ToList();
+            var userCheck = _userService.GetUserCheckMail(request.Mail, request.UserId).ToList();
             if (userCheck.Count != 0)
             {
                 return Ok(0);
@@ -246,11 +246,6 @@ namespace WebApi.Controllers
         {
             var userId = UserId();
             var org = _userService.GetUserById(userId);
-            DateTime? dateOfBirth = null;
-            if (DateTime.TryParse(user.DateOfBirth, out var parsedDate))
-            {
-                dateOfBirth = parsedDate.ToUniversalTime();
-            }
             var updateUser = _userService.UpdateUser(userId, user.FirstName, user.LastName, user.Mail, user.Phone);
             var updateOrganization = _userService.UpdateOrganization(org.OrganizationId, user.Name, user.OrgAddress, user.ZipCode, user.TaskNumber);
             if (updateUser == 0 && updateOrganization == 0)
@@ -265,11 +260,6 @@ namespace WebApi.Controllers
         {
             var userId = UserId();
             var org = _userService.GetUserById(userId);
-            DateTime? dateOfBirth = null;
-            if (DateTime.TryParse(user.DateOfBirth, out var parsedDate))
-            {
-                dateOfBirth = parsedDate.ToUniversalTime();
-            }
 
             var updateUser = _userService.UpdateUser(userId, user.FirstName, user.LastName, user.Mail, user.Phone);
 
@@ -284,11 +274,6 @@ namespace WebApi.Controllers
         [HttpPost("update-user")]
         public IActionResult UpdateUser([FromBody] UpdateUser user)
         {
-            DateTime? dateOfBirth = null;
-            if (DateTime.TryParse(user.DateOfBirth, out var parsedDate))
-            {
-                dateOfBirth = parsedDate.ToUniversalTime();
-            }
             var updateUser = _userService.UpdateUser(user.Id, user.FirstName, user.LastName, user.Mail, user.Phone);
             if (updateUser == 0)
             {

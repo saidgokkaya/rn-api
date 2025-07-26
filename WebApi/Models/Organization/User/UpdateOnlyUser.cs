@@ -18,11 +18,5 @@ namespace AdminPanel.Models.Organization.User
 
         [JsonPropertyName("phone")]
         public string Phone { get; set; }
-
-        [JsonPropertyName("dateOfBirth")]
-        public string DateOfBirth { get; set; }
-
-        [JsonPropertyName("gender")]
-        public string Gender { get; set; }
     }
 }
