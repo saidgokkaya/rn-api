@@ -141,6 +141,64 @@ namespace Service.Implementations.Ruhsat
             return data;
         }
         #endregion
+
+        #region Depo
+        public int AddDepo(int organizationId, string name, int ruhsatSinifiId)
+        {
+            var depo = new Depo
+            {
+                Adi = name,
+                OrganizationId = organizationId,
+                RuhsatSinifiId = ruhsatSinifiId,
+                InsertedDate = DateTime.UtcNow,
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            _repository.Save(depo);
+            return depo.Id;
+        }
+
+        public int UpdateDepo(int id, string name, int ruhsatSinifiId)
+        {
+            var depo = GetDepoById(id);
+            if (depo != null)
+            {
+                depo.Adi = name;
+                depo.RuhsatSinifiId = ruhsatSinifiId;
+                depo.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(depo);
+                return depo.Id;
+            }
+            return 0;
+        }
+
+        public int IsDeletedDepo(int id)
+        {
+            var depo = GetDepoById(id);
+            if (depo != null)
+            {
+                depo.IsDeleted = !depo.IsDeleted;
+                depo.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(depo);
+                return depo.Id;
+            }
+            return 0;
+        }
+
+        public Depo GetDepoById(int id)
+        {
+            return _repository.GetById<Depo>(id);
+        }
+
+        public async Task<IEnumerable<Depo>> GetDepo(int organizationId)
+        {
+            var data = _repository.FilterAsQueryable<Depo>(p => !p.IsDeleted && !p.RuhsatSinifi.IsDeleted && p.Organization.Id.Equals(organizationId)).IncludeDepo();
+            return data;
+        }
+        #endregion
     }
 
     public static class RuhsatExtensions
@@ -156,6 +214,13 @@ namespace Service.Implementations.Ruhsat
             return query
                 .Include(ma => ma.Organization)
                 .Include(ma => ma.RuhsatTuru);
+        }
+
+        public static IQueryable<Depo> IncludeDepo(this IQueryable<Depo> query)
+        {
+            return query
+                .Include(ma => ma.Organization)
+                .Include(ma => ma.RuhsatSinifi);
         }
     }
 }

@@ -192,6 +192,82 @@ namespace WebApi.Controllers
             return Ok(1);
         }
 
+        [HttpGet("warehouses")]
+        public async Task<ActionResult<IEnumerable<WareHouses>>> GetWareHouses()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var warehouses = await _ruhsatService.GetDepo(user.OrganizationId);
+
+            var warehousesList = warehouses.Select(warehouse => new WareHouses
+            {
+                Id = warehouse.Id,
+                Name = warehouse.Adi,
+                RuhsatSinifiId = warehouse.RuhsatSinifiId,
+            }).ToList();
+
+            return Ok(warehousesList);
+        }
+
+        [HttpPost]
+        [Route("add-warehouse")]
+        public async Task<IActionResult> AddWareHouses([FromBody] AddWareHousesRequest request)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+
+            var existingWarehouses = await _ruhsatService.GetDepo(user.OrganizationId);
+
+            var incomingWarehouses = request.Name;
+
+            var templatesToUpdate = new List<WareHouseDto>();
+            var templatesToAdd = new List<WareHouseDto>();
+
+            foreach (var incoming in incomingWarehouses)
+            {
+                if (incoming.Id.HasValue)
+                {
+                    var match = existingWarehouses.FirstOrDefault(e => e.Id == incoming.Id.Value);
+                    if (match != null)
+                    {
+                        var ruhsatSinifiChanged = match.RuhsatSinifiId != incoming.RuhsatSinifiId;
+                        var nameChanged = !string.Equals(match.Adi, incoming.Name, StringComparison.Ordinal);
+
+                        if (nameChanged || ruhsatSinifiChanged)
+                        {
+                            templatesToUpdate.Add(incoming);
+                        }
+                    }
+                }
+                else
+                {
+                    templatesToAdd.Add(incoming);
+                }
+            }
+
+            var incomingIds = incomingWarehouses.Where(x => x.Id.HasValue).Select(x => x.Id.Value).ToList();
+            var templatesToRemove = existingWarehouses
+                .Where(e => !incomingIds.Contains(e.Id))
+                .ToList();
+
+            foreach (var add in templatesToAdd)
+            {
+                _ruhsatService.AddDepo(user.OrganizationId, add.Name, add.RuhsatSinifiId);
+            }
+
+            foreach (var update in templatesToUpdate)
+            {
+                _ruhsatService.UpdateDepo(update.Id.Value, update.Name, update.RuhsatSinifiId);
+            }
+
+            foreach (var delete in templatesToRemove)
+            {
+                _ruhsatService.IsDeletedDepo(delete.Id);
+            }
+
+            return Ok(1);
+        }
+
         private int UserId()
         {
             var userIdClaim = HttpContext.User.FindFirst("userId");
