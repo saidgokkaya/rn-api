@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AdminPanel.Models.Organization.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Implementations.Ruhsat;
 using Service.Implementations.User;
+using System.Net.Http;
 using Utilities.Helper;
 using WebApi.Models.Ruhsat;
 
@@ -266,6 +268,65 @@ namespace WebApi.Controllers
             }
 
             return Ok(1);
+        }
+
+        [HttpGet("permits")]
+        public async Task<ActionResult<IEnumerable<Permit>>> GetPermit()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var permits = await _ruhsatService.GetRuhsat(user.OrganizationId);
+
+            var permitsList = permits.Select(permit => new Permit
+            {
+                Id = permit.Id,
+                RuhsatNo = permit.RuhsatNo,
+                TcKimlikNo = permit.TcKimlikNo,
+                FullName = permit.Adi + " " + permit.Soyadi,
+                IsyeriUnvani = permit.IsyeriUnvani,
+                FaaliyetKonusuName = permit.FaaliyetKonusu.Name,
+                RuhsatTuruName = permit.RuhsatTuru.Name,
+                VerilisTarihi = permit.VerilisTarihi,
+                IsActive = permit.IsActive ? "Aktif" : "Pasif",
+            }).ToList();
+
+            return Ok(permitsList);
+        }
+
+        [HttpPost("permit-status")]
+        public async Task<IActionResult> PermitStatus(int id)
+        {
+            var status = _ruhsatService.IsActiveRuhsat(id);
+            if (status == 0)
+            {
+                return BadRequest(); 
+            }
+            return Ok(1);
+        }
+
+        [HttpPost("delete-permit")]
+        public IActionResult DeleteUser(int id)
+        {
+            var deletePermit = _ruhsatService.IsDeletedRuhsat(id);
+            if (deletePermit == 0)
+            {
+                return Ok(new { success = false });
+            }
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("delete-permits")]
+        public IActionResult DeletePermits([FromBody] DeletePermits permits)
+        {
+            foreach (var permit in permits.PermitIds)
+            {
+                var deletePermit = _ruhsatService.IsDeletedRuhsat(permit);
+                if (deletePermit == 0)
+                {
+                    return Ok(new { success = false });
+                }
+            }
+            return Ok(new { success = true });
         }
 
         private int UserId()

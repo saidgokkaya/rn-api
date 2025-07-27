@@ -199,6 +199,51 @@ namespace Service.Implementations.Ruhsat
             return data;
         }
         #endregion
+
+        #region Ruhsat
+        public int IsActiveRuhsat(int id)
+        {
+            var ruhsat = GetRuhsatById(id);
+            if (ruhsat != null)
+            {
+                ruhsat.IsActive = !ruhsat.IsActive;
+                ruhsat.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(ruhsat);
+                return ruhsat.Id;
+            }
+            return 0;
+        }
+
+        public int IsDeletedRuhsat(int id)
+        {
+            var ruhsat = GetRuhsatById(id);
+            if (ruhsat != null)
+            {
+                ruhsat.IsDeleted = !ruhsat.IsDeleted;
+                ruhsat.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(ruhsat);
+                return ruhsat.Id;
+            }
+            return 0;
+        }
+
+        public Core.Domain.Ruhsat.Ruhsat GetRuhsatById(int id)
+        {
+            return _repository.GetById<Core.Domain.Ruhsat.Ruhsat>(id);
+        }
+
+        public async Task<IEnumerable<Core.Domain.Ruhsat.Ruhsat>> GetRuhsat(int organizationId)
+        {
+            var data = _repository.FilterAsQueryable<Core.Domain.Ruhsat.Ruhsat>(p => !p.IsDeleted 
+                                && (p.RuhsatSinifi == null || !p.RuhsatSinifi.IsDeleted)
+                                && !p.RuhsatTuru.IsDeleted 
+                                && !p.FaaliyetKonusu.IsDeleted 
+                                && p.Organization.Id.Equals(organizationId)).IncludeRuhsat();
+            return data;
+        }
+        #endregion
     }
 
     public static class RuhsatExtensions
@@ -221,6 +266,15 @@ namespace Service.Implementations.Ruhsat
             return query
                 .Include(ma => ma.Organization)
                 .Include(ma => ma.RuhsatSinifi);
+        }
+
+        public static IQueryable<Core.Domain.Ruhsat.Ruhsat> IncludeRuhsat(this IQueryable<Core.Domain.Ruhsat.Ruhsat> query)
+        {
+            return query
+                .Include(ma => ma.Organization)
+                .Include(ma => ma.RuhsatTuru)
+                .Include(ma => ma.RuhsatSinifi)
+                .Include(ma => ma.FaaliyetKonusu);
         }
     }
 }
