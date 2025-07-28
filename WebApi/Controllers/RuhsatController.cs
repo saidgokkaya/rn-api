@@ -24,6 +24,7 @@ namespace WebApi.Controllers
         private readonly RuhsatService _ruhsatService;
         private readonly DefaultValues _defaultValues;
         private readonly string _photoPath;
+        private readonly string _scannedPath;
 
         public RuhsatController(ILogger<RuhsatController> logger, IConfiguration configuration)
         {
@@ -33,6 +34,7 @@ namespace WebApi.Controllers
             _ruhsatService = new RuhsatService();
             _defaultValues = new DefaultValues();
             _photoPath = configuration["PhotoPath"];
+            _scannedPath = configuration["ScannedFilePath"];
         }
 
         [HttpGet("ruhsat-turu")]
@@ -328,6 +330,7 @@ namespace WebApi.Controllers
                 VerilisTarihi = permit.VerilisTarihi,
                 IsActive = permit.IsActive ? "Aktif" : "Pasif",
                 PhotoPath = permit.PhotoPath,
+                ScannedFilePath = permit.ScannedFilePath,
             }).ToList();
 
             return Ok(permitsList);
@@ -539,6 +542,52 @@ namespace WebApi.Controllers
             }
 
             return Ok(1);
+        }
+
+        [HttpPost("upload-scanned-file")]
+        [RequestSizeLimit(20_000_000)]
+        public async Task<IActionResult> UploadScannedFile([FromForm] IFormFile file, [FromForm] int id)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Dosya seçilmedi.");
+
+            if (!file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Yalnızca PDF dosyası yükleyebilirsiniz.");
+
+            var uploadPath = _scannedPath;
+            Directory.CreateDirectory(uploadPath);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var filePath = Path.Combine(uploadPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var ruhsat = _ruhsatService.UpdateScannedPdf(id,fileName);
+
+            return Ok(new { scannedFilePath = fileName });
+        }
+
+        [HttpPost("delete-scanned-file")]
+        public IActionResult DeleteScannedFile(int id)
+        {
+            var ruhsat = _ruhsatService.GetRuhsatById(id);
+
+            if (ruhsat == null || string.IsNullOrEmpty(ruhsat.ScannedFilePath))
+                return NotFound("Dosya bulunamadı.");
+
+            var filePath = Path.Combine(_scannedPath, ruhsat.ScannedFilePath);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            _ruhsatService.UpdateScannedPdf(id, null);
+
+            return Ok("Silindi");
         }
 
         private int UserId()

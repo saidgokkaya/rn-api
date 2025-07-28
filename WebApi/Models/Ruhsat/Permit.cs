@@ -15,5 +15,6 @@ namespace WebApi.Models.Ruhsat
         public string FaaliyetKonusuName { get; set; }
         public string RuhsatTuruName { get; set; }
         public string? PhotoPath { get; set; }
+        public string? ScannedFilePath { get; set; }
     }
 }

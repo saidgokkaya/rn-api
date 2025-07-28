@@ -314,6 +314,19 @@ namespace Service.Implementations.Ruhsat
             return 0;
         }
 
+        public int UpdateScannedPdf(int id, string fileName)
+        {
+            var ruhsat = GetRuhsatById(id);
+            if (ruhsat != null)
+            {
+                ruhsat.ScannedFilePath = fileName;
+
+                _repository.Update(ruhsat);
+                return ruhsat.Id;
+            }
+            return 0;
+        }
+
         public int IsActiveRuhsat(int id)
         {
             var ruhsat = GetRuhsatById(id);
