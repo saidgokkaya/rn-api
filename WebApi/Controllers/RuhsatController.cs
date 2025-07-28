@@ -23,6 +23,7 @@ namespace WebApi.Controllers
         private readonly UserService _userService;
         private readonly RuhsatService _ruhsatService;
         private readonly DefaultValues _defaultValues;
+        private readonly PdfHelper _pdfHelper;
         private readonly string _photoPath;
         private readonly string _scannedPath;
 
@@ -33,6 +34,7 @@ namespace WebApi.Controllers
             _userService = new UserService();
             _ruhsatService = new RuhsatService();
             _defaultValues = new DefaultValues();
+            _pdfHelper = new PdfHelper();
             _photoPath = configuration["PhotoPath"];
             _scannedPath = configuration["ScannedFilePath"];
         }
@@ -588,6 +590,48 @@ namespace WebApi.Controllers
             _ruhsatService.UpdateScannedPdf(id, null);
 
             return Ok("Silindi");
+        }
+
+        [HttpGet("download-certificate")]
+        public IActionResult GetCertificateHtml(int id)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var org = _userService.GetOrganizationById(user.OrganizationId);
+            var ruhsat = _ruhsatService.GetRuhsatByIdFirst(user.OrganizationId, id);
+
+            if (ruhsat == null)
+                return NotFound("Ruhsat bulunamadı.");
+
+            var dto = new RuhsatDto
+            {
+                Id = ruhsat.Id,
+                TcKimlikNo = ruhsat.TcKimlikNo,
+                Adi = ruhsat.Adi,
+                Soyadi = ruhsat.Soyadi,
+                IsyeriUnvani = ruhsat.IsyeriUnvani,
+                FaaliyetKonusu = new FaaliyetKonusuDto { Name = ruhsat.FaaliyetKonusu?.Name },
+                Adres = ruhsat.Adres,
+                Ada = ruhsat.Ada,
+                Pafta = ruhsat.Pafta,
+                Parsel = ruhsat.Parsel,
+                RuhsatTuru = new RuhsatTuruDto { Name = ruhsat.RuhsatTuru?.Name },
+                RuhsatSinifi = ruhsat.RuhsatSinifi != null ? new RuhsatSinifiDto { Name = ruhsat.RuhsatSinifi.Name } : null,
+                VerilisTarihi = ruhsat.VerilisTarihi,
+                RuhsatNo = ruhsat.RuhsatNo,
+                PhotoPath = _photoPath + "/" + ruhsat.PhotoPath,
+                DepoBilgileri = ruhsat.DepoBilgi.Count != 0 ? ruhsat.DepoBilgi.Select(d => new DepoBilgiDto { Bilgi = d.Bilgi }).ToList() : null,
+                BelName = org?.BelName,
+                LogoUrl = org?.LogoUrl,
+                BelBaskan = org?.BelBaskan,
+                BelTitle = org?.BelTitle,
+                Content1 = org?.Content1,
+                Content2 = org?.Content2,
+                Content3 = org?.Content3
+            };
+
+            var htmlContent = _pdfHelper.GenerateCertificateHtml(dto);
+            return Content(htmlContent, "text/html");
         }
 
         private int UserId()

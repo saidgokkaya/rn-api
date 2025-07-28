@@ -14,6 +14,13 @@ namespace Core.Domain.User
         public string ZipCode { get; set; }
         public string TaskNumber { get; set; }
         public string Phone { get; set; }
+        public string? BelName { get; set; }
+        public string? LogoUrl { get; set; }
+        public string? BelBaskan { get; set; }
+        public string? BelTitle { get; set; }
+        public string? Content1 { get; set; }
+        public string? Content2 { get; set; }
+        public string? Content3 { get; set; }
         public virtual ICollection<User> User { get; set; }
         public virtual ICollection<Core.Domain.Ruhsat.Ruhsat> Ruhsat { get; set; }
         public virtual ICollection<RuhsatSinifi> RuhsatSinifi { get; set; }
