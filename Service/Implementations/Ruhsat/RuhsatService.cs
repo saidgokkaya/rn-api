@@ -140,6 +140,12 @@ namespace Service.Implementations.Ruhsat
             var data = _repository.FilterAsQueryable<RuhsatSinifi>(p => !p.IsDeleted && p.Organization.Id.Equals(organizationId)).IncludeRuhsatSinifi();
             return data;
         }
+
+        public async Task<IEnumerable<RuhsatSinifi>> GetRuhsatSinifi(int organizationId, int ruhsatTuruId)
+        {
+            var data = _repository.FilterAsQueryable<RuhsatSinifi>(p => !p.IsDeleted && p.Organization.Id.Equals(organizationId) && p.RuhsatTuru.Id.Equals(ruhsatTuruId)).IncludeRuhsatSinifi();
+            return data;
+        }
         #endregion
 
         #region Depo
@@ -198,9 +204,116 @@ namespace Service.Implementations.Ruhsat
             var data = _repository.FilterAsQueryable<Depo>(p => !p.IsDeleted && !p.RuhsatSinifi.IsDeleted && p.Organization.Id.Equals(organizationId)).IncludeDepo();
             return data;
         }
+
+        public async Task<IEnumerable<Depo>> GetDepo(int organizationId, int ruhsatSinifiId)
+        {
+            var data = _repository.FilterAsQueryable<Depo>(p => !p.IsDeleted && !p.RuhsatSinifi.IsDeleted && p.Organization.Id.Equals(organizationId) && p.RuhsatSinifi.Id.Equals(ruhsatSinifiId)).IncludeDepo();
+            return data;
+        }
         #endregion
 
         #region Ruhsat
+        public int AddRuhsat(
+            int organizationId, 
+            int faaliyetKonusuId, 
+            int ruhsatTuruId, 
+            int? ruhsatSinifiId, 
+            string ruhsatNo, 
+            string tcKimlikNo, 
+            string adi, 
+            string soyadi, 
+            string isyeriUnvani, 
+            DateTime verilisTarihi, 
+            string ada, 
+            string parsel, 
+            string pafta, 
+            string adres, 
+            string not, 
+            string photoPath)
+        {
+            var ruhsat = new Core.Domain.Ruhsat.Ruhsat
+            {
+                OrganizationId = organizationId,
+                FaaliyetKonusuId = faaliyetKonusuId,
+                RuhsatTuruId = ruhsatTuruId,
+                RuhsatSinifiId = ruhsatSinifiId,
+                RuhsatNo = ruhsatNo,
+                TcKimlikNo = tcKimlikNo,
+                Adi = adi,
+                Soyadi = soyadi,
+                IsyeriUnvani = isyeriUnvani,
+                VerilisTarihi = verilisTarihi,
+                Ada = ada,
+                Parsel = parsel,
+                Pafta = pafta,
+                Adres = adres,
+                Not = not,
+                PhotoPath = photoPath,
+                InsertedDate = DateTime.UtcNow,
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            _repository.Save(ruhsat);
+            return ruhsat.Id;
+        }
+
+        public int UpdateRuhsat(
+            int id,
+            int organizationId,
+            int faaliyetKonusuId,
+            int ruhsatTuruId,
+            int? ruhsatSinifiId,
+            string ruhsatNo,
+            string tcKimlikNo,
+            string adi,
+            string soyadi,
+            string isyeriUnvani,
+            DateTime verilisTarihi,
+            string ada,
+            string parsel,
+            string pafta,
+            string adres,
+            string not)
+        {
+            var ruhsat = GetRuhsatById(id);
+            if (ruhsat != null)
+            {
+                ruhsat.FaaliyetKonusuId = faaliyetKonusuId;
+                ruhsat.RuhsatTuruId = ruhsatTuruId;
+                ruhsat.RuhsatSinifiId = ruhsatSinifiId;
+                ruhsat.RuhsatNo = ruhsatNo;
+                ruhsat.TcKimlikNo = tcKimlikNo;
+                ruhsat.Adi = adi;
+                ruhsat.Soyadi = soyadi;
+                ruhsat.IsyeriUnvani = isyeriUnvani;
+                ruhsat.VerilisTarihi = verilisTarihi;
+                ruhsat.Ada = ada;
+                ruhsat.Parsel = parsel;
+                ruhsat.Pafta = pafta;
+                ruhsat.Adres = adres;
+                ruhsat.Not = not;
+                ruhsat.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(ruhsat);
+                return ruhsat.Id;
+            }
+            return 0;
+        }
+
+        public int UpdatePhoto(int id, string fileName)
+        {
+            var ruhsat = GetRuhsatById(id);
+            if (ruhsat != null)
+            {
+                ruhsat.PhotoPath = fileName;
+
+                _repository.Update(ruhsat);
+                return ruhsat.Id;
+            }
+            return 0;
+        }
+
         public int IsActiveRuhsat(int id)
         {
             var ruhsat = GetRuhsatById(id);
@@ -243,6 +356,65 @@ namespace Service.Implementations.Ruhsat
                                 && p.Organization.Id.Equals(organizationId)).IncludeRuhsat();
             return data;
         }
+
+        public Core.Domain.Ruhsat.Ruhsat GetRuhsatByIdFirst(int organizationId, int id)
+        {
+            return _repository
+                .FilterAsQueryable<Core.Domain.Ruhsat.Ruhsat>(p =>
+                    !p.IsDeleted &&
+                    (p.RuhsatSinifi == null || !p.RuhsatSinifi.IsDeleted) &&
+                    !p.RuhsatTuru.IsDeleted &&
+                    !p.FaaliyetKonusu.IsDeleted &&
+                    p.Organization.Id == organizationId &&
+                    p.Id.Equals(id))
+                .IncludeRuhsat()
+                .FirstOrDefault();
+        }
+        #endregion
+
+        #region DepoBilgi
+        public int AddDepoBilgi(int organizationId, int ruhsatId, int depoId, string adi, string bilgi)
+        {
+            var ruhsat = new Core.Domain.Ruhsat.DepoBilgi
+            {
+                OrganizationId = organizationId,
+                RuhsatId = ruhsatId,
+                DepoId = depoId,
+                DepoAdi = adi,
+                Bilgi = bilgi,
+                InsertedDate = DateTime.UtcNow,
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            _repository.Save(ruhsat);
+            return ruhsat.Id;
+        }
+
+        public int IsDeletedDepoBilgi(int id)
+        {
+            var depoBilgi = GetDepoBilgiById(id);
+            if (depoBilgi != null)
+            {
+                depoBilgi.IsDeleted = !depoBilgi.IsDeleted;
+                depoBilgi.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(depoBilgi);
+                return depoBilgi.Id;
+            }
+            return 0;
+        }
+
+        public Core.Domain.Ruhsat.DepoBilgi GetDepoBilgiById(int id)
+        {
+            return _repository.GetById<Core.Domain.Ruhsat.DepoBilgi>(id);
+        }
+
+        public IEnumerable<Core.Domain.Ruhsat.DepoBilgi> GetDepoBilgi(int ruhsatId)
+        {
+            var data = _repository.FilterAsQueryable<Core.Domain.Ruhsat.DepoBilgi>(p => !p.IsDeleted && p.Ruhsat.Id.Equals(ruhsatId)).IncludeDepoBilgi();
+            return data;
+        }
         #endregion
     }
 
@@ -268,13 +440,21 @@ namespace Service.Implementations.Ruhsat
                 .Include(ma => ma.RuhsatSinifi);
         }
 
+        public static IQueryable<DepoBilgi> IncludeDepoBilgi(this IQueryable<DepoBilgi> query)
+        {
+            return query
+                .Include(ma => ma.Organization)
+                .Include(ma => ma.Ruhsat);
+        }
+
         public static IQueryable<Core.Domain.Ruhsat.Ruhsat> IncludeRuhsat(this IQueryable<Core.Domain.Ruhsat.Ruhsat> query)
         {
             return query
                 .Include(ma => ma.Organization)
                 .Include(ma => ma.RuhsatTuru)
                 .Include(ma => ma.RuhsatSinifi)
-                .Include(ma => ma.FaaliyetKonusu);
+                .Include(ma => ma.FaaliyetKonusu)
+                .Include(x => x.DepoBilgi.Where(db => !db.IsDeleted));
         }
     }
 }

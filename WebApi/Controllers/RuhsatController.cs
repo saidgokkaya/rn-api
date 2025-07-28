@@ -1,10 +1,13 @@
 ﻿using AdminPanel.Models.Organization.User;
+using Core.Domain.Ruhsat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Service.Implementations.Ruhsat;
 using Service.Implementations.User;
 using System.Net.Http;
+using System.Text.Json;
 using Utilities.Helper;
 using WebApi.Models.Ruhsat;
 
@@ -20,6 +23,7 @@ namespace WebApi.Controllers
         private readonly UserService _userService;
         private readonly RuhsatService _ruhsatService;
         private readonly DefaultValues _defaultValues;
+        private readonly string _photoPath;
 
         public RuhsatController(ILogger<RuhsatController> logger, IConfiguration configuration)
         {
@@ -28,16 +32,17 @@ namespace WebApi.Controllers
             _userService = new UserService();
             _ruhsatService = new RuhsatService();
             _defaultValues = new DefaultValues();
+            _photoPath = configuration["PhotoPath"];
         }
 
         [HttpGet("ruhsat-turu")]
-        public async Task<ActionResult<IEnumerable<RuhsatTuru>>> GetRuhsatTurus()
+        public async Task<ActionResult<IEnumerable<Models.Ruhsat.RuhsatTuru>>> GetRuhsatTurus()
         {
             var userId = UserId();
             var user = _userService.GetUserById(userId);
             var ruhsatTurus = await _ruhsatService.GetRuhsatTuru();
 
-            var ruhsatTurusList = ruhsatTurus.Select(ruhsatTuru => new RuhsatTuru
+            var ruhsatTurusList = ruhsatTurus.Select(ruhsatTuru => new Models.Ruhsat.RuhsatTuru
             {
                 Id = ruhsatTuru.Id,
                 Name = ruhsatTuru.Name
@@ -135,6 +140,23 @@ namespace WebApi.Controllers
             return Ok(classesList);
         }
 
+        [HttpGet("classes-type")]
+        public async Task<ActionResult<IEnumerable<Classes>>> GetClassesIsType(int ruhsatTuruId)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var classes = await _ruhsatService.GetRuhsatSinifi(user.OrganizationId, ruhsatTuruId);
+
+            var classesList = classes.Select(classs => new Classes
+            {
+                Id = classs.Id,
+                Name = classs.Name,
+                RuhsatTuruId = classs.RuhsatTuruId,
+            }).ToList();
+
+            return Ok(classesList);
+        }
+
         [HttpPost]
         [Route("add-classes")]
         public async Task<IActionResult> AddClasses([FromBody] AddClassesRequest request)
@@ -200,6 +222,23 @@ namespace WebApi.Controllers
             var userId = UserId();
             var user = _userService.GetUserById(userId);
             var warehouses = await _ruhsatService.GetDepo(user.OrganizationId);
+
+            var warehousesList = warehouses.Select(warehouse => new WareHouses
+            {
+                Id = warehouse.Id,
+                Name = warehouse.Adi,
+                RuhsatSinifiId = warehouse.RuhsatSinifiId,
+            }).ToList();
+
+            return Ok(warehousesList);
+        }
+
+        [HttpGet("warehouses-classes")]
+        public async Task<ActionResult<IEnumerable<WareHouses>>> GetWareHousesIsClasses(int ruhsatSinifiId)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var warehouses = await _ruhsatService.GetDepo(user.OrganizationId, ruhsatSinifiId);
 
             var warehousesList = warehouses.Select(warehouse => new WareHouses
             {
@@ -288,6 +327,7 @@ namespace WebApi.Controllers
                 RuhsatTuruName = permit.RuhsatTuru.Name,
                 VerilisTarihi = permit.VerilisTarihi,
                 IsActive = permit.IsActive ? "Aktif" : "Pasif",
+                PhotoPath = permit.PhotoPath,
             }).ToList();
 
             return Ok(permitsList);
@@ -327,6 +367,178 @@ namespace WebApi.Controllers
                 }
             }
             return Ok(new { success = true });
+        }
+
+        [HttpPost("add")]
+        [RequestSizeLimit(20_000_000)]
+        public async Task<IActionResult> Add([FromForm] AddRequest dto)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            if (dto.Image is null || dto.Image.Length == 0)
+                return BadRequest("Görsel zorunludur.");
+
+            Dictionary<string, string>? warehouses = null;
+            if (!string.IsNullOrWhiteSpace(dto.Warehouses))
+            {
+                try
+                {
+                    warehouses = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        dto.Warehouses,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    return BadRequest("Warehouses alanı geçerli bir JSON değil.");
+                }
+            }
+
+            var uploadPath = _photoPath;
+            Directory.CreateDirectory(uploadPath);
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
+            var savedPath = Path.Combine(uploadPath, fileName);
+
+            await using (var fs = System.IO.File.Create(savedPath))
+            {
+                await dto.Image.CopyToAsync(fs);
+            }
+
+            var add = _ruhsatService.AddRuhsat(user.OrganizationId, dto.ActivityId, dto.TurId, dto.ClassId, dto.RuhsatNo, dto.TcKimlikNo, dto.Adi, dto.Soyadi, dto.IsyeriUnvani, dto.VerilisTarihi, dto.Ada, dto.Parsel, dto.Pafta, dto.Adres, dto.Not, fileName);
+
+            if (warehouses is not null && warehouses.Any())
+            {
+                foreach (var entry in warehouses)
+                {
+                    var warehouseId = int.Parse(entry.Key);
+                    var depo = _ruhsatService.GetDepoById(warehouseId);
+                    var value = entry.Value;
+
+                    _ruhsatService.AddDepoBilgi(user.OrganizationId, add, warehouseId, depo.Adi, value);
+                }
+            }
+
+            return Ok(1);
+        }
+
+        [HttpGet("permit-by-id")]
+        public IActionResult GetById(int id)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var ruhsat = _ruhsatService.GetRuhsatByIdFirst(user.OrganizationId, id);
+
+            if (ruhsat == null)
+                return NotFound("Ruhsat bulunamadı.");
+
+            var dto = new RuhsatDetailDto
+            {
+                Id = ruhsat.Id,
+                RuhsatTuruId = ruhsat.RuhsatTuruId,
+                FaaliyetKonusuId = ruhsat.FaaliyetKonusuId,
+                RuhsatSinifiId = ruhsat.RuhsatSinifiId,
+                RuhsatNo = ruhsat.RuhsatNo,
+                TcKimlikNo = ruhsat.TcKimlikNo,
+                Adi = ruhsat.Adi,
+                Soyadi = ruhsat.Soyadi,
+                IsyeriUnvani = ruhsat.IsyeriUnvani,
+                VerilisTarihi = ruhsat.VerilisTarihi,
+                Ada = ruhsat.Ada,
+                Parsel = ruhsat.Parsel,
+                Pafta = ruhsat.Pafta,
+                Adres = ruhsat.Adres,
+                Not = ruhsat.Not,
+                Warehouses = ruhsat.DepoBilgi?
+                        .ToDictionary(
+                            x => x.DepoId,
+                            x => new WarehouseInfoDto { Bilgi = x.Bilgi, DepoAdi = x.DepoAdi }
+                        ),
+                ImageUrl = ruhsat.PhotoPath
+            };
+
+            return Ok(dto);
+        }
+
+        [HttpPost("update")]
+        [RequestSizeLimit(20_000_000)]
+        public async Task<IActionResult> Update([FromForm] UpdateRequest dto)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+
+            var ruhsat = _ruhsatService.GetRuhsatById(dto.Id);
+            var oldPhotoFileName = ruhsat?.PhotoPath;
+
+            if (dto.Image != null && dto.Image.Length > 0)
+            {
+                if (!string.IsNullOrWhiteSpace(oldPhotoFileName))
+                {
+                    var oldPath = Path.Combine(_photoPath, oldPhotoFileName);
+                    if (System.IO.File.Exists(oldPath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(oldPath);
+                        }
+                        catch (IOException ex)
+                        {
+                            _logger.LogWarning(ex, "Old photo couldn't be deleted: {Path}", oldPath);
+                        }
+                    }
+                }
+
+                Directory.CreateDirectory(_photoPath);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
+                var savedPath = Path.Combine(_photoPath, fileName);
+
+                await using (var fs = System.IO.File.Create(savedPath))
+                {
+                    await dto.Image.CopyToAsync(fs);
+                }
+
+                _ruhsatService.UpdatePhoto(dto.Id, fileName);
+            }
+
+            Dictionary<string, string>? warehouses = null;
+            if (!string.IsNullOrWhiteSpace(dto.Warehouses))
+            {
+                try
+                {
+                    warehouses = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        dto.Warehouses,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    return BadRequest("Warehouses alanı geçerli bir JSON değil.");
+                }
+            }
+
+            var update = _ruhsatService.UpdateRuhsat(dto.Id, user.OrganizationId, dto.ActivityId, dto.TurId, dto.ClassId, dto.RuhsatNo, dto.TcKimlikNo, dto.Adi, dto.Soyadi, dto.IsyeriUnvani, dto.VerilisTarihi, dto.Ada, dto.Parsel, dto.Pafta, dto.Adres, dto.Not);
+
+            if (warehouses is not null && warehouses.Any())
+            {
+                var deleteDepoBilgi = _ruhsatService.GetDepoBilgi(dto.Id);
+                foreach (var item in deleteDepoBilgi.ToList())
+                {
+                    _ruhsatService.IsDeletedDepoBilgi(item.Id);
+                }
+                foreach (var entry in warehouses)
+                {
+                    var warehouseId = int.Parse(entry.Key);
+                    var depo = _ruhsatService.GetDepoById(warehouseId);
+                    var value = entry.Value;
+
+                    _ruhsatService.AddDepoBilgi(user.OrganizationId, dto.Id, warehouseId, depo.Adi, value);
+                }
+            }
+
+            return Ok(1);
         }
 
         private int UserId()
