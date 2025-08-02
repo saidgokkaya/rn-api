@@ -4,6 +4,7 @@ using Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Core.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250802085942_malsaaa")]
+    partial class malsaaa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,6 +42,12 @@ namespace Core.Migrations
                     b.Property<string>("AdresNo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BagimsizBolge")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BelgeNoId")
+                        .HasColumnType("int");
+
                     b.Property<string>("BlokAdi")
                         .HasColumnType("nvarchar(max)");
 
@@ -57,6 +66,9 @@ namespace Core.Migrations
                     b.Property<string>("IcKapiNo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("IcKapiSayisi")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("InsertedDate")
                         .HasColumnType("datetime2");
 
@@ -67,6 +79,9 @@ namespace Core.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("IsYeriUnvani")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IsyeriSayisi")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Mah")
@@ -81,11 +96,17 @@ namespace Core.Migrations
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Pafta")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Parsel")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SiteAdi")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Tarih")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("TcKimlikNo")
                         .HasColumnType("nvarchar(max)");
@@ -427,10 +448,6 @@ namespace Core.Migrations
                     b.Property<string>("BelBaskan")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BelBaskanTitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("BelName")
                         .HasColumnType("nvarchar(max)");
 
@@ -444,10 +461,6 @@ namespace Core.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Content3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Content4")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("InsertedDate")
@@ -464,12 +477,6 @@ namespace Core.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumaratajBelName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumaratajPersonName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")

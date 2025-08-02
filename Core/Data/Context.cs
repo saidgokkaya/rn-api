@@ -1,4 +1,5 @@
-﻿using Core.Domain.Ruhsat;
+﻿using Core.Domain.Numarataj;
+using Core.Domain.Ruhsat;
 using Core.Domain.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -54,6 +55,8 @@ namespace Core.Data
         public DbSet<FaaliyetKonusu> FaaliyetKonusu { get; set; }
         public DbSet<Depo> Depo { get; set; }
         public DbSet<DepoBilgi> DepoBilgi { get; set; }
+        public DbSet<Mahalle> Mahalle { get; set; }
+        public DbSet<Numarataj> Numarataj { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -98,6 +101,24 @@ namespace Core.Data
                 .HasOne(d => d.RuhsatSinifi)
                 .WithMany(rs => rs.Depo)
                 .HasForeignKey(d => d.RuhsatSinifiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Numarataj>()
+                .HasOne(r => r.Organization)
+                .WithMany(rs => rs.Numarataj)
+                .HasForeignKey(r => r.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Numarataj>()
+                .HasOne(db => db.Mahalle)
+                .WithMany(o => o.Numarataj)
+                .HasForeignKey(db => db.MahalleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Mahalle>()
+                .HasOne(db => db.Organization)
+                .WithMany(r => r.Mahalle)
+                .HasForeignKey(db => db.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

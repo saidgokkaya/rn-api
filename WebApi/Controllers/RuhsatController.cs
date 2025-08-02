@@ -627,7 +627,9 @@ namespace WebApi.Controllers
                 BelTitle = org?.BelTitle,
                 Content1 = org?.Content1,
                 Content2 = org?.Content2,
-                Content3 = org?.Content3
+                Content3 = org?.Content3,
+                Content4 = org?.Content4,
+                BelBaskanTitle = org?.BelBaskanTitle,
             };
 
             var htmlContent = _pdfHelper.GenerateCertificateHtml(dto);

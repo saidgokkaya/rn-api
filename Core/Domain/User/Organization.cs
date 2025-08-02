@@ -1,4 +1,5 @@
-﻿using Core.Domain.Ruhsat;
+﻿using Core.Domain.Numarataj;
+using Core.Domain.Ruhsat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +22,17 @@ namespace Core.Domain.User
         public string? Content1 { get; set; }
         public string? Content2 { get; set; }
         public string? Content3 { get; set; }
+        public string? NumaratajBelName { get; set; }
+        public string? NumaratajPersonName { get; set; }
+        public string BelBaskanTitle { get; set; }
+        public string Content4 { get; set; }
         public virtual ICollection<User> User { get; set; }
         public virtual ICollection<Core.Domain.Ruhsat.Ruhsat> Ruhsat { get; set; }
         public virtual ICollection<RuhsatSinifi> RuhsatSinifi { get; set; }
         public virtual ICollection<FaaliyetKonusu> FaaliyetKonusu { get; set; }
         public virtual ICollection<Depo> Depo { get; set; }
         public virtual ICollection<DepoBilgi> DepoBilgi { get; set; }
+        public virtual ICollection<Mahalle> Mahalle { get; set; }
+        public virtual ICollection<Numarataj.Numarataj> Numarataj { get; set; }
     }
 }

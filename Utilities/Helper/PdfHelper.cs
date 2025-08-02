@@ -128,7 +128,7 @@ namespace Utilities.Helper
 
             if (model.RuhsatTuru?.Name == "Gayrisıhhi Müessese" && model.DepoBilgileri?.Any() == true)
             {
-                sb.AppendLine("<div style='font-weight:bold;'>Depolar:</div>");
+                sb.AppendLine($"<div style='font-weight:bold;'>{model.Content4}</div>");
                 for (int i = 0; i < model.DepoBilgileri.Count; i++)
                 {
                     sb.AppendLine($"{i + 1}. Depo: {model.DepoBilgileri[i].Bilgi} m³<br/>");
@@ -142,6 +142,7 @@ namespace Utilities.Helper
 
             sb.AppendLine("<div class='signature-block'>");
             sb.AppendLine($"<div><strong>{model.BelBaskan}</strong></div>");
+            sb.AppendLine($"<div><strong>{model.BelBaskanTitle}</strong></div>");
             sb.AppendLine($"<div>{model.BelTitle}</div><br/><br/>");
             sb.AppendLine("</div>");
 
@@ -154,6 +155,96 @@ namespace Utilities.Helper
             sb.AppendLine("</div>");
 
             sb.AppendLine("</div></div></div></body></html>");
+
+            return sb.ToString();
+        }
+
+        public string GenerateCertificateNumaratajHtml(NumaratajDto model)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("<!DOCTYPE html>");
+            sb.AppendLine("<html lang=\"tr\">");
+            sb.AppendLine("<head>");
+            sb.AppendLine("  <meta charset=\"UTF-8\">");
+            sb.AppendLine("  <title></title>");
+            sb.AppendLine("  <style>");
+            sb.AppendLine("    body { font-family: Arial, sans-serif; margin: 40px; }");
+            sb.AppendLine("    .center { text-align: center; }");
+            sb.AppendLine("    .header { font-size: 24px; font-weight: bold; }");
+            sb.AppendLine("    .subheader { font-size: 20px; font-weight: bold; }");
+            sb.AppendLine("    .section-title { background: #f0f0f0; padding: 8px; font-weight: bold; }");
+            sb.AppendLine("    .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }");
+            sb.AppendLine("    .table td { padding: 8px; border: 1px solid #000; }");
+            sb.AppendLine("    .table td:first-child {width: 30%; font-weight: bold;}");
+            sb.AppendLine("    .no-border td { border: none !important; }");
+            sb.AppendLine("    .footer { font-size: 12px; margin-top: 30px; border: 1px solid #000; padding: 10px; }");
+            sb.AppendLine("    .top-header { display: flex; justify-content: space-between; align-items: center; }");
+            sb.AppendLine("    .logo { width: 110px; }");
+            sb.AppendLine("    .title-block { flex-grow: 1; text-align: center; margin-left: -110px; }");
+            sb.AppendLine("  </style>");
+            sb.AppendLine("</head>");
+            sb.AppendLine("<body>");
+
+            sb.AppendLine("  <div class=\"top-header\">");
+            sb.AppendLine($"    <img src=\"{model.LogoUrl}\" class=\"logo\" style=\"float: left;\" />");
+            sb.AppendLine("    <div class=\"title-block\">");
+            sb.AppendLine($"{model.BelediyeAdi}");
+            sb.AppendLine($"      <div>{model.BirimAdi}</div>");
+            sb.AppendLine("    </div>");
+            sb.AppendLine("  </div>");
+
+            sb.AppendLine("  <br><br>");
+
+            sb.AppendLine("  <table class=\"table no-border\">");
+            sb.AppendLine("    <tr>");
+            sb.AppendLine($"      <td style=\"text-align: left;\">Belge No: {model.BelgeNo}</td>");
+            sb.AppendLine("      <td style=\"text-align: center; background-color: #d3d3d3; font-weight: bold;\">NUMARATAJ BELGESİ</td>");
+            sb.AppendLine($"      <td style=\"text-align: right;\">Tarih: {model.Tarih:dd.MM.yyyy}</td>");
+            sb.AppendLine("    </tr>");
+            sb.AppendLine("  </table>");
+
+            sb.AppendLine($"  <div class=\"section-title center\">{model.Baslik}</div>");
+
+            sb.AppendLine("  <div class=\"section-title\">KİMLİK BİLGİLERİ</div>");
+            sb.AppendLine("  <table class=\"table\">");
+            sb.AppendLine($"    <tr><td>TC Kimlik No</td><td>{model.TcKimlikNo}</td></tr>");
+            sb.AppendLine($"    <tr><td>Ad/Soyad</td><td>{model.AdSoyad}</td></tr>");
+            sb.AppendLine($"    <tr><td>Telefon</td><td>{model.Telefon}</td></tr>");
+            sb.AppendLine("  </table>");
+
+            sb.AppendLine("  <div class=\"section-title\">ADRES BİLGİLERİ</div>");
+            sb.AppendLine("  <table class=\"table\">");
+            sb.AppendLine($"    <tr><td>Adres No (UAVT)</td><td>{model.AdresNo}</td></tr>");
+            sb.AppendLine($"    <tr><td>Mahalle</td><td>{model.Mahalle}</td></tr>");
+            sb.AppendLine($"    <tr><td>Cadde/Sokak/Bulvar</td><td>{model.CaddeSokak}</td></tr>");
+            sb.AppendLine($"    <tr><td>Dış Kapı</td><td>{model.DisKapi}</td></tr>");
+            sb.AppendLine($"    <tr><td>İç Kapı No</td><td>{model.IcKapiNo}</td></tr>");
+            sb.AppendLine($"    <tr><td>Yapı/Site Adı</td><td>{model.SiteAdi}</td></tr>");
+            sb.AppendLine("  </table>");
+
+            sb.AppendLine("  <div class=\"section-title\">TAPU BİLGİLERİ</div>");
+            sb.AppendLine("  <table class=\"table\">");
+            sb.AppendLine($"    <tr><td>Ada/Parsel</td><td>{model.Ada} / {model.Parsel}</td></tr>");
+            sb.AppendLine("  </table>");
+
+            sb.AppendLine("  <div class=\"section-title\">ADRES DEĞİŞİKLİĞİ BİLGİLERİ</div>");
+            sb.AppendLine("  <table class=\"table\">");
+            sb.AppendLine($"    <tr><td>Eski Adres</td><td>{model.EskiAdres}</td></tr>");
+            sb.AppendLine("  </table>");
+
+            sb.AppendLine("  <br><br>");
+            sb.AppendLine("  <div class=\"center\">");
+            sb.AppendLine($"    <strong>{model.PersonelAdi}</strong><br>");
+            sb.AppendLine("    NUMARATAJ PERSONELİ");
+            sb.AppendLine("  </div>");
+
+            sb.AppendLine("  <div class=\"footer\">");
+            sb.AppendLine($"    {model.Adres}");
+            sb.AppendLine("  </div>");
+
+            sb.AppendLine("</body>");
+            sb.AppendLine("</html>");
 
             return sb.ToString();
         }
@@ -190,10 +281,12 @@ namespace Utilities.Helper
         public string BelName { get; set; }
         public string LogoUrl { get; set; }
         public string BelBaskan { get; set; }
+        public string BelBaskanTitle { get; set; }
         public string BelTitle { get; set; }
         public string Content1 { get; set; }
         public string Content2 { get; set; }
         public string Content3 { get; set; }
+        public string Content4 { get; set; }
     }
 
     public class FaaliyetKonusuDto
@@ -217,5 +310,31 @@ namespace Utilities.Helper
         {
             get; set;
         }
+    }
+
+    public class NumaratajDto
+    {
+        public string LogoUrl { get; set; }
+        public string BelediyeAdi { get; set; }
+        public string BirimAdi { get; set; }
+        public string BelgeNo { get; set; }
+        public DateTime Tarih { get; set; }
+        public string Baslik { get; set; }
+        public string TcKimlikNo { get; set; }
+        public string AdSoyad { get; set; }
+        public string Telefon { get; set; }
+        public string AdresNo { get; set; }
+        public string Mahalle { get; set; }
+        public string CaddeSokak { get; set; }
+        public string DisKapi { get; set; }
+        public string IcKapiNo { get; set; }
+        public string SiteAdi { get; set; }
+        public int Type { get; set; }
+        public string IsYeriUnvani { get; set; }
+        public string Ada { get; set; }
+        public string Parsel { get; set; }
+        public string EskiAdres { get; set; }
+        public string PersonelAdi { get; set; }
+        public string Adres { get; set; }
     }
 }

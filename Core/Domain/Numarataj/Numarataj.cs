@@ -1,0 +1,36 @@
+﻿using Core.Domain.User;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core.Domain.Numarataj
+{
+    public class Numarataj : BaseEntity
+    {
+        public string? TcKimlikNo { get; set; }
+        public string? AdSoyad { get; set; }
+        public string? Telefon { get; set; }
+        public string? Mah { get; set; }
+        public string? CaddeSokak { get; set; }
+        public string? DisKapi { get; set; }
+        public string? DisKapi2 { get; set; }
+        public string? IcKapiNo { get; set; }
+        public string? SiteAdi { get; set; }
+        public string? EskiAdres { get; set; }
+        public string? BlokAdi { get; set; }
+        public string? AdresNo { get; set; }
+        public string? IsYeriUnvani { get; set; }
+        public string? Ada { get; set; }
+        public string? Parsel { get; set; }
+        public int NumaratajType { get; set; }
+
+        public int OrganizationId { get; set; }
+        public virtual Organization Organization { get; set; }
+
+        public int MahalleId { get; set; }
+        public virtual Mahalle Mahalle { get; set; }
+    }
+}
