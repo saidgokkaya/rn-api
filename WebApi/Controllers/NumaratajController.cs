@@ -158,7 +158,7 @@ namespace WebApi.Controllers
                     4 => "Adres Tespit",
                     _ => "Bilinmeyen"
                 }
-            }).ToList();
+            }).OrderByDescending(x => x.Id).ToList();
 
             return Ok(numberingsList);
         }
@@ -182,7 +182,7 @@ namespace WebApi.Controllers
                 DisKapi = numbering.DisKapi,
                 IcKapiNo = numbering.IcKapiNo,
                 Mahalle = numbering.Mahalle.Name,
-            }).ToList();
+            }).OrderByDescending(x => x.Id).ToList();
 
             return Ok(numberingsList);
         }
@@ -257,7 +257,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("download-certificate")]
-        public IActionResult GetCertificateHtml(int id)
+        public IActionResult GetCertificateHtml(int id, bool visibilty = true)
         {
             var userId = UserId();
             var user = _userService.GetUserById(userId);
@@ -266,6 +266,11 @@ namespace WebApi.Controllers
 
             if (numarataj == null)
                 return NotFound("Numarataj bulunamadı.");
+
+            if (numarataj.NumaratajType == 2)
+            {
+                visibilty = true;
+            }
 
             var dto = new NumaratajDto
             {
@@ -298,7 +303,8 @@ namespace WebApi.Controllers
                 EskiAdres = numarataj.EskiAdres,
                 PersonelAdi = user.FirstName + " " + user.LastName,
                 BirimAdi = org.NumaratajPersonName,
-                Adres = org.Address
+                Adres = org.Address,
+                Visibility = visibilty
             };
 
             var htmlContent = _pdfHelper.GenerateCertificateNumaratajHtml(dto);

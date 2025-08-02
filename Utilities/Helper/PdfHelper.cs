@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -177,6 +179,19 @@ namespace Utilities.Helper
             sb.AppendLine("    .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }");
             sb.AppendLine("    .table td { padding: 8px; border: 1px solid #000; }");
             sb.AppendLine("    .table td:first-child {width: 30%; font-weight: bold;}");
+            sb.AppendLine("    .watermark {");
+            sb.AppendLine("      position: fixed;");
+            sb.AppendLine("      top: 50%;");
+            sb.AppendLine("      left: 50%;");
+            sb.AppendLine("      transform: translate(-50%, -50%) rotate(-50deg);");
+            sb.AppendLine("      font-size: 100px;");
+            sb.AppendLine("      color: rgba(0, 0, 0, 0.05);");
+            sb.AppendLine("      white-space: nowrap;");
+            sb.AppendLine("      z-index: 0;");
+            sb.AppendLine("      pointer-events: none;");
+            sb.AppendLine("      user-select: none;");
+            sb.AppendLine("    }");
+            sb.AppendLine("    .main-title { font-size: 25px; }");
             sb.AppendLine("    .no-border td { border: none !important; }");
             sb.AppendLine("    .footer { font-size: 12px; margin-top: 30px; border: 1px solid #000; padding: 10px; }");
             sb.AppendLine("    .top-header { display: flex; justify-content: space-between; align-items: center; }");
@@ -185,7 +200,7 @@ namespace Utilities.Helper
             sb.AppendLine("  </style>");
             sb.AppendLine("</head>");
             sb.AppendLine("<body>");
-
+            sb.AppendLine("  <div class=\"watermark\">NUMARATAJ</div>");
             sb.AppendLine("  <div class=\"top-header\">");
             sb.AppendLine($"    <img src=\"{model.LogoUrl}\" class=\"logo\" style=\"float: left;\" />");
             sb.AppendLine("    <div class=\"title-block\">");
@@ -204,13 +219,19 @@ namespace Utilities.Helper
             sb.AppendLine("    </tr>");
             sb.AppendLine("  </table>");
 
-            sb.AppendLine($"  <div class=\"section-title center\">{model.Baslik}</div>");
+            sb.AppendLine($"  <div class=\"section-title center main-title\" style=\"border: 1px solid #333; background-color: #d3d3d3; padding: 8px; border-radius: 4px; margin-bottom: 8px;\">{model.Baslik}</div>");
 
             sb.AppendLine("  <div class=\"section-title\">KİMLİK BİLGİLERİ</div>");
             sb.AppendLine("  <table class=\"table\">");
-            sb.AppendLine($"    <tr><td>TC Kimlik No</td><td>{model.TcKimlikNo}</td></tr>");
+            if (model.Visibility)
+            {
+                sb.AppendLine($"    <tr><td>TC Kimlik No</td><td>{model.TcKimlikNo}</td></tr>");
+            }
             sb.AppendLine($"    <tr><td>Ad/Soyad</td><td>{model.AdSoyad}</td></tr>");
-            sb.AppendLine($"    <tr><td>Telefon</td><td>{model.Telefon}</td></tr>");
+            if (model.Visibility)
+            {
+                sb.AppendLine($"    <tr><td>Telefon</td><td>{model.Telefon}</td></tr>");
+            }
             sb.AppendLine("  </table>");
 
             sb.AppendLine("  <div class=\"section-title\">ADRES BİLGİLERİ</div>");
@@ -242,6 +263,8 @@ namespace Utilities.Helper
             sb.AppendLine("  <div class=\"footer\">");
             sb.AppendLine($"    {model.Adres}");
             sb.AppendLine("  </div>");
+            var guid = Guid.NewGuid().ToString();
+            sb.AppendLine($"  <div style=\"position: fixed; bottom: 2px; left: 2px; font-size: 8px; color: #999; user-select: none;\">{guid}</div>");
 
             sb.AppendLine("</body>");
             sb.AppendLine("</html>");
@@ -336,5 +359,6 @@ namespace Utilities.Helper
         public string EskiAdres { get; set; }
         public string PersonelAdi { get; set; }
         public string Adres { get; set; }
+        public bool Visibility { get; set; }
     }
 }
