@@ -140,6 +140,20 @@ namespace Service.Implementations.User
             return 0;
         }
 
+        public int UpdatePhotoUrl(int id, string photoUrl)
+        {
+            var user = GetUserById(id);
+            if (user != null)
+            {
+                user.PhotoPath = photoUrl;
+                user.UpdateDate = DateTime.UtcNow;
+
+                _repository.Update(user);
+                return user.Id;
+            }
+            return 0;
+        }
+
         public int UpdateUser(int id, string firstName, string lastName, string mail, string phone)
         {
             var user = GetUserById(id);
@@ -220,6 +234,15 @@ namespace Service.Implementations.User
 			var data = _repository
 				.FilterAsQueryable<Core.Domain.User.User>(
 					p => !p.IsDeleted && p.Mail == mail && p.Id != id)
+				.IncludeUser();
+			return data;
+		}
+
+		public IEnumerable<Core.Domain.User.User> GetUserCheckMailN(string mail)
+		{
+			var data = _repository
+				.FilterAsQueryable<Core.Domain.User.User>(
+					p => !p.IsDeleted && p.Mail == mail)
 				.IncludeUser();
 			return data;
 		}

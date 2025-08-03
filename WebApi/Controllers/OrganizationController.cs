@@ -44,6 +44,55 @@ namespace WebApi.Controllers
             return Ok(1);
         }
 
+        [HttpPost("check-mail")]
+        public async Task<IActionResult> CheckMail([FromBody] CheckMail request)
+        {
+            var userCheck = _userService.GetUserCheckMailN(request.Mail).ToList();
+            if (userCheck.Count != 0)
+            {
+                return Ok(0);
+            }
+
+            return Ok(1);
+        }
+
+        [HttpPost("add-photo")]
+        public IActionResult AddPhoto([FromForm] AddPhoto photo)
+        {
+            if (photo?.Photo != null)
+            {
+                var uploadsDirectory = _configuration["UserPhotoPath"];
+
+                if (!Directory.Exists(uploadsDirectory))
+                {
+                    Directory.CreateDirectory(uploadsDirectory);
+                }
+
+                var fileExtension = Path.GetExtension(photo.Photo.FileName).ToLower();
+                var fileNameWithoutExtension = photo.UserId.ToString();
+
+                var newFileName = fileNameWithoutExtension + fileExtension;
+                var newFilePath = Path.Combine(uploadsDirectory, newFileName);
+
+                using (var fileStream = new FileStream(newFilePath, FileMode.Create))
+                {
+                    photo.Photo.CopyTo(fileStream);
+                }
+
+                var user = _userService.GetUserById(photo.UserId);
+                if (user == null)
+                {
+                    return NotFound("Kullanıcı bulunamadı.");
+                }
+
+                _userService.UpdatePhotoUrl(photo.UserId, newFileName);
+
+                return Ok(new { success = true });
+            }
+
+            return Ok(new { success = true });
+        }
+
         [HttpGet("users")]
         public ActionResult<IEnumerable<Users>> GetUsers()
         {
@@ -57,6 +106,7 @@ namespace WebApi.Controllers
                 Name = user.FirstName + " " + user.LastName,
                 Mail = user.Mail,
                 Phone = user.Phone,
+                PhotoUrl = user.PhotoPath,
                 IsActive = user.IsActive ? "Aktif" : "Pasif",
             }).ToList();
 
@@ -85,6 +135,7 @@ namespace WebApi.Controllers
                 LastName = user.LastName,
                 Mail = user.Mail,
                 Phone = user.Phone,
+                PhotoUrl = user.PhotoPath,
                 Roles = role.Select(q => q.RoleId).ToList()
             };
 
@@ -113,6 +164,7 @@ namespace WebApi.Controllers
                 LastName = user.LastName,
                 Mail = user.Mail,
                 Phone = user.Phone,
+                PhotoUrl = user.PhotoPath,
                 Roles = role.Select(q => q.RoleId).ToList()
             };
 
@@ -129,7 +181,8 @@ namespace WebApi.Controllers
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Mail = user.Mail
+                Mail = user.Mail,
+                PhotoUrl = user.PhotoPath
             };
 
             return Ok(data);
@@ -313,19 +366,13 @@ namespace WebApi.Controllers
                 }
 
                 var fileExtension = Path.GetExtension(photo.Photo.FileName).ToLower();
-
-                if (fileExtension != ".png")
-                {
-                    return BadRequest("Yalnızca .png dosya uzantıları kabul edilmektedir.");
-                }
-
                 var fileNameWithoutExtension = photo.UserId.ToString();
 
                 var existingFiles = Directory.GetFiles(uploadsDirectory, fileNameWithoutExtension + ".*");
                 foreach (var existingFile in existingFiles)
                 {
                     var existingFileExtension = Path.GetExtension(existingFile).ToLower();
-                    if (existingFileExtension == ".png")
+                    if (existingFileExtension == ".png" || existingFileExtension == ".jpg" || existingFileExtension == ".jpeg")
                     {
                         System.IO.File.Delete(existingFile);
                     }
@@ -338,6 +385,14 @@ namespace WebApi.Controllers
                 {
                     photo.Photo.CopyTo(fileStream);
                 }
+
+                var user = _userService.GetUserById(photo.UserId);
+                if (user == null)
+                {
+                    return NotFound("Kullanıcı bulunamadı.");
+                }
+
+                _userService.UpdatePhotoUrl(photo.UserId, newFileName);
 
                 return Ok(new { success = true });
             }
