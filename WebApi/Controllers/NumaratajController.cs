@@ -127,6 +127,31 @@ namespace WebApi.Controllers
         [HttpPost("update")]
         public async Task<IActionResult> UpdateNumarataj([FromBody] UpdateNumarataj model)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var currentData = _numaratajService.GetNumaratajByIdFirst(user.OrganizationId, model.Id);
+
+            if (currentData == null)
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(model.EskiAdres))
+            {
+                bool isChanged =
+                    currentData.MahalleId != model.MahalleId ||
+                    currentData.CaddeSokak != model.CaddeSokak ||
+                    currentData.DisKapi != model.DisKapi ||
+                    currentData.IcKapiNo != model.IcKapiNo;
+
+                if (isChanged)
+                {
+                    model.EskiAdres = $"{currentData.Mahalle?.Name ?? ""} {currentData.CaddeSokak} {currentData.DisKapi} {currentData.IcKapiNo}";
+                }
+                else
+                {
+                    model.EskiAdres = null;
+                }
+            }
+
             _numaratajService.UpdateNumarataj(model.Id, model.TcKimlikNo, model.AdSoyad, model.Telefon, model.CaddeSokak, model.DisKapi,
                 model.IcKapiNo, model.SiteAdi, model.EskiAdres, model.BlokAdi, model.AdresNo, model.IsYeriUnvani, model.Ada, model.Parsel, model.NumaratajType, model.MahalleId);
 

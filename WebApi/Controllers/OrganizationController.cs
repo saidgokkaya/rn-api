@@ -397,6 +397,20 @@ namespace WebApi.Controllers
             return Ok(new { success = true });
         }
 
+        [HttpGet("logo")]
+        public IActionResult GetOrganizationLogo()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var organization = _userService.GetOrganizationById(user.OrganizationId);
+            if (organization != null && !string.IsNullOrEmpty(organization.LogoUrl))
+            {
+                return Ok(new { logoUrl = organization.LogoUrl });
+            }
+
+            return NotFound();
+        }
+
         private int UserId()
         {
             var userIdClaim = HttpContext.User.FindFirst("userId");

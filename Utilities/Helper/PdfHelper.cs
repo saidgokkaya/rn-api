@@ -223,12 +223,12 @@ namespace Utilities.Helper
 
             sb.AppendLine("  <div class=\"section-title\">KİMLİK BİLGİLERİ</div>");
             sb.AppendLine("  <table class=\"table\">");
-            if (model.Visibility)
+            if (model.Visibility && !string.IsNullOrWhiteSpace(model.TcKimlikNo))
             {
                 sb.AppendLine($"    <tr><td>TC Kimlik No</td><td>{model.TcKimlikNo}</td></tr>");
             }
             sb.AppendLine($"    <tr><td>Ad/Soyad</td><td>{model.AdSoyad}</td></tr>");
-            if (model.Visibility)
+            if (model.Visibility && !string.IsNullOrWhiteSpace(model.Telefon))
             {
                 sb.AppendLine($"    <tr><td>Telefon</td><td>{model.Telefon}</td></tr>");
             }
@@ -249,10 +249,18 @@ namespace Utilities.Helper
             sb.AppendLine($"    <tr><td>Ada/Parsel</td><td>{model.Ada} / {model.Parsel}</td></tr>");
             sb.AppendLine("  </table>");
 
-            sb.AppendLine("  <div class=\"section-title\">ADRES DEĞİŞİKLİĞİ BİLGİLERİ</div>");
-            sb.AppendLine("  <table class=\"table\">");
-            sb.AppendLine($"    <tr><td>Eski Adres</td><td>{model.EskiAdres}</td></tr>");
-            sb.AppendLine("  </table>");
+            if (!string.IsNullOrWhiteSpace(model.EskiAdres))
+            {
+                sb.AppendLine("  <div class=\"section-title\">ADRES DEĞİŞİKLİĞİ BİLGİLERİ</div>");
+                sb.AppendLine("  <table class=\"table\">");
+                sb.AppendLine($"    <tr><td>Eski Adres</td><td>{model.EskiAdres}</td></tr>");
+                sb.AppendLine("  </table>");
+            }
+            else
+            {
+                sb.AppendLine("  <br><br>");
+                sb.AppendLine("  <br><br>");
+            }
 
             sb.AppendLine("  <br><br>");
             sb.AppendLine("  <div class=\"center\">");
