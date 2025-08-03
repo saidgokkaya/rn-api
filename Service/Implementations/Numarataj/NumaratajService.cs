@@ -183,6 +183,20 @@ namespace Service.Implementations.Numarataj
             return data;
         }
 
+        public async Task<IEnumerable<Core.Domain.Numarataj.Numarataj>> GetNumaratajExcel(List<int> numberingIds, int organizationId)
+        {
+            var data = _repository
+                .FilterAsQueryable<Core.Domain.Numarataj.Numarataj>(
+                    p => !p.IsDeleted &&
+                         numberingIds.Contains(p.Id) &&
+                         !p.Mahalle.IsDeleted &&
+                         p.Organization.Id.Equals(organizationId)
+                )
+                .IncludeNumarataj();
+
+            return await data.ToListAsync();
+        }
+
         public Core.Domain.Numarataj.Numarataj GetNumaratajByIdFirst(int organizationId, int id)
         {
             return _repository

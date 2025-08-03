@@ -27,6 +27,7 @@ namespace WebApi.Controllers
         private readonly NumaratajService _numaratajService;
         private readonly DefaultValues _defaultValues;
         private readonly PdfHelper _pdfHelper;
+        private readonly ExcelHelper _excelHelper;
 
         public NumaratajController(ILogger<NumaratajController> logger)
         {
@@ -35,6 +36,7 @@ namespace WebApi.Controllers
             _numaratajService = new NumaratajService();
             _defaultValues = new DefaultValues();
             _pdfHelper = new PdfHelper();
+            _excelHelper = new ExcelHelper();
         }
 
         [HttpGet("mahalles")]
@@ -309,6 +311,92 @@ namespace WebApi.Controllers
 
             var htmlContent = _pdfHelper.GenerateCertificateNumaratajHtml(dto);
             return Content(htmlContent, "text/html");
+        }
+
+        [HttpPost("export-excel")]
+        public async Task<IActionResult> ExportExcel([FromBody] ExportRequest request)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var records = await _numaratajService.GetNumaratajExcel(request.NumberingIds, user.OrganizationId);
+
+            var dtoList = records.Select(r => new NumaratajExcelDto
+            {
+                BelgeNo = r.Id.ToString(),
+                Tarih = r.InsertedDate.Value,
+                TcKimlikNo = r.TcKimlikNo,
+                AdSoyad = r.AdSoyad,
+                Telefon = r.Telefon,
+                AdresNo = r.AdresNo,
+                Mahalle = r.Mahalle.Name,
+                CaddeSokak = r.CaddeSokak,
+                DisKapi = r.DisKapi,
+                IcKapiNo = r.IcKapiNo,
+                SiteAdi = r.SiteAdi,
+                IsYeriUnvani = r.IsYeriUnvani,
+                Ada = r.Ada,
+                Parsel = r.Parsel,
+                EskiAdres = r.EskiAdres,
+                BlokAdi = r.BlokAdi,
+                NumaratajType = r.NumaratajType switch
+                {
+                    0 => "Özel İşyeri",
+                    1 => "Resmi Kurum",
+                    2 => "Yeni Bina",
+                    3 => "Saha Çalışması",
+                    4 => "Adres Tespit",
+                    _ => "Bilinmeyen"
+                },
+                numType = r.NumaratajType
+            }).ToList();
+
+            var fileBytes = _excelHelper.GenerateExcelFile(dtoList);
+
+            var fileName = $"Numarataj_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpPost("export-excel-num-type")]
+        public async Task<IActionResult> ExportExcelNumType([FromBody] ExportRequest request)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var records = await _numaratajService.GetNumaratajExcel(request.NumberingIds, user.OrganizationId);
+
+            var dtoList = records.Select(r => new NumaratajExcelDto
+            {
+                BelgeNo = r.Id.ToString(),
+                Tarih = r.InsertedDate.Value,
+                TcKimlikNo = r.TcKimlikNo,
+                AdSoyad = r.AdSoyad,
+                Telefon = r.Telefon,
+                AdresNo = r.AdresNo,
+                Mahalle = r.Mahalle.Name,
+                CaddeSokak = r.CaddeSokak,
+                DisKapi = r.DisKapi,
+                IcKapiNo = r.IcKapiNo,
+                SiteAdi = r.SiteAdi,
+                IsYeriUnvani = r.IsYeriUnvani,
+                Ada = r.Ada,
+                Parsel = r.Parsel,
+                EskiAdres = r.EskiAdres,
+                BlokAdi = r.BlokAdi,
+                NumaratajType = r.NumaratajType switch
+                {
+                    0 => "Özel İşyeri",
+                    1 => "Resmi Kurum",
+                    2 => "Yeni Bina",
+                    3 => "Saha Çalışması",
+                    4 => "Adres Tespit",
+                    _ => "Bilinmeyen"
+                },
+                numType = r.NumaratajType
+            }).ToList();
+
+            var fileBytes = _excelHelper.GenerateExcelNumTypeFile(dtoList);
+
+            var fileName = $"Numarataj_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         private int UserId()
