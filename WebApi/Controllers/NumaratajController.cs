@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Service.Implementations.Numarataj;
 using Service.Implementations.Ruhsat;
 using Service.Implementations.User;
@@ -397,6 +398,206 @@ namespace WebApi.Controllers
 
             var fileName = $"Numarataj_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpGet("last-7-days")]
+        public async Task<ActionResult> GetLast7DaysNumberingData()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var allRecords = await _numaratajService.GetNumarataj(user.OrganizationId);
+
+            var last7Days = Enumerable.Range(0, 7)
+                .Select(i => DateTime.Now.Date.AddDays(-6 + i))
+                .ToList();
+
+            var groupedData = allRecords
+                .Where(n => n.InsertedDate.HasValue && n.InsertedDate.Value.Date >= last7Days.First())
+                .GroupBy(n => n.InsertedDate.Value.Date)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var typesAll = new List<int> { 0, 1, 2, 3, 4 };
+
+            var result = last7Days.Select(date =>
+            {
+                var dayName = date.ToString("dddd", new System.Globalization.CultureInfo("tr-TR"));
+
+                var recordsForDay = groupedData.ContainsKey(date) ? groupedData[date] : new List<Core.Domain.Numarataj.Numarataj>();
+
+                var typesCount = typesAll.Select(t =>
+                    new
+                    {
+                        Type = t,
+                        Count = recordsForDay.Count(r => r.NumaratajType == t)
+                    }
+                ).ToList();
+
+                return new
+                {
+                    Date = date,
+                    Day = dayName,
+                    Types = typesCount
+                };
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("last-4-weeks")]
+        public async Task<ActionResult> GetLast4WeeksNumberingData()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var allRecords = await _numaratajService.GetNumarataj(user.OrganizationId);
+
+            var today = DateTime.Now.Date;
+
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var currentWeekStart = today.AddDays(-1 * diff);
+
+            var last4WeekStarts = Enumerable.Range(0, 4)
+                .Select(i => currentWeekStart.AddDays(-7 * (3 - i)))
+                .ToList();
+
+            var recordsWithWeekStart = allRecords
+                .Where(n => n.InsertedDate.HasValue)
+                .Select(n =>
+                {
+                    var date = n.InsertedDate.Value.Date;
+                    int diffRec = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+                    var weekStart = date.AddDays(-1 * diffRec);
+                    return new { Record = n, WeekStart = weekStart };
+                })
+                .ToList();
+
+            var filteredRecords = recordsWithWeekStart
+                .Where(r => last4WeekStarts.Contains(r.WeekStart))
+                .ToList();
+
+            var typesAll = new List<int> { 0, 1, 2, 3, 4 };
+
+            var cultureTR = new System.Globalization.CultureInfo("tr-TR");
+
+            var result = last4WeekStarts.Select(weekStart =>
+            {
+                var monthName = cultureTR.DateTimeFormat.GetMonthName(weekStart.Month);
+                int weekOfMonth = _defaultValues.GetWeekOfMonth(weekStart);
+
+                var recordsForWeek = filteredRecords
+                    .Where(r => r.WeekStart == weekStart)
+                    .Select(r => r.Record)
+                    .ToList();
+
+                var typesCount = typesAll.Select(t =>
+                    new
+                    {
+                        Type = t,
+                        Count = recordsForWeek.Count(r => r.NumaratajType == t)
+                    }
+                ).ToList();
+
+                return new
+                {
+                    WeekStart = weekStart,
+                    Label = $"{monthName} {weekOfMonth}. Hafta",
+                    Types = typesCount
+                };
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("chart-data-mahalle")]
+        public async Task<ActionResult> GetNumberingsChartData()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var numberings = await _numaratajService.GetNumarataj(user.OrganizationId);
+
+            var topMahalleler = numberings
+                .GroupBy(n => n.Mahalle.Name)
+                .Select(g => new { Mahalle = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(5)
+                .Select(x => x.Mahalle)
+                .ToList();
+
+            var tipiMapping = new Dictionary<int, string>
+            {
+                [0] = "Özel İşyeri",
+                [1] = "Resmi Kurum",
+                [2] = "Yeni Bina",
+                [3] = "Saha Çalışması",
+                [4] = "Adres Tespit"
+            };
+
+            var series = tipiMapping.Select(t => new {
+                Name = t.Value,
+                Data = new List<int>()
+            }).ToList();
+
+            foreach (var mahalle in topMahalleler)
+            {
+                var mahalleData = numberings.Where(n => n.Mahalle.Name == mahalle);
+
+                foreach (var s in series)
+                {
+                    int tipKey = tipiMapping.First(x => x.Value == s.Name).Key;
+                    int count = mahalleData.Count(n => n.NumaratajType == tipKey);
+                    s.Data.Add(count);
+                }
+            }
+
+            var result = new
+            {
+                categories = topMahalleler,
+                series = series.Select(s => new { name = s.Name, data = s.Data }).ToList()
+            };
+
+            return Ok(result);
+        }
+
+        [HttpGet("numberings-count")]
+        public async Task<ActionResult<NumaratajSummary>> GetNumberingCount()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var numberings = await _numaratajService.GetNumarataj(user.OrganizationId);
+
+            var numberingsList = numberings.Select(numbering => new Models.Numarataj.Numarataj
+            {
+                Id = numbering.Id,
+                TcKimlikNo = numbering.TcKimlikNo,
+                IsActive = numbering.IsActive ? "Aktif" : "Pasif",
+                AdSoyad = numbering.AdSoyad,
+                Telefon = numbering.Telefon,
+                InsertedDate = numbering.InsertedDate,
+                CaddeSokak = numbering.CaddeSokak,
+                DisKapi = numbering.DisKapi,
+                IcKapiNo = numbering.IcKapiNo,
+                Mahalle = numbering.Mahalle.Name,
+                NumaratajType = numbering.NumaratajType switch
+                {
+                    0 => "Özel İşyeri",
+                    1 => "Resmi Kurum",
+                    2 => "Yeni Bina",
+                    3 => "Saha Çalışması",
+                    4 => "Adres Tespit",
+                    _ => "Bilinmeyen"
+                }
+            }).OrderByDescending(x => x.Id).ToList();
+
+            var typeCounts = numberingsList
+                .GroupBy(n => n.NumaratajType)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var summary = new NumaratajSummary
+            {
+                TypeCounts = typeCounts,
+                TotalCount = numberingsList.Count
+            };
+
+            return Ok(summary);
         }
 
         private int UserId()

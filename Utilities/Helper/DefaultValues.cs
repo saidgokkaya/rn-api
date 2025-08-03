@@ -60,5 +60,14 @@ namespace Utilities.Helper
                 return Convert.ToBase64String(hashedBytes);
             }
         }
+
+        public int GetWeekOfMonth(DateTime date)
+        {
+            var firstDay = new DateTime(date.Year, date.Month, 1);
+            int firstDayDiff = (7 + (firstDay.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var firstWeekStart = firstDay.AddDays(-1 * firstDayDiff);
+            int weekNumber = (int)Math.Floor((date - firstWeekStart).TotalDays / 7) + 1;
+            return weekNumber;
+        }
     }
 }
