@@ -9,6 +9,7 @@ using Service.Implementations.User;
 using System.Globalization;
 using System.Xml;
 using Utilities.Helper;
+using WebApi.Models.Organization.User;
 
 namespace WebApi.Controllers
 {
@@ -30,6 +31,23 @@ namespace WebApi.Controllers
             _userService = new UserService();
             _defaultValues = new DefaultValues();
             _emailHelper = new EmailHelper();
+        }
+
+        [Authorize]
+        [HttpGet("settings")]
+        public IActionResult GetSettings()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var organization = _userService.GetOrganizationById(user.OrganizationId);
+
+            var settings = new OrganizationSettingsDto
+            {
+                NumaratajView = organization.NumaratajView,
+                RuhsatView = organization.RuhsatView
+            };
+
+            return Ok(settings);
         }
 
         [HttpPost("check-mail-me")]
@@ -231,15 +249,25 @@ namespace WebApi.Controllers
         [HttpGet("roles")]
         public ActionResult<IEnumerable<Roles>> GetRoles()
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var organization = _userService.GetOrganizationById(user.OrganizationId);
+
             var roles = _userService.GetRole();
 
-            var roleList = roles.Select(role => new Roles
-            {
-                Id = role.Id,
-                Name = role.Name
-            }).ToList();
+            var filteredRoles = roles
+                .Where(role =>
+                    (role.Id == 5 && organization.RuhsatView == true) ||
+                    (role.Id == 6 && organization.NumaratajView == true)
+                )
+                .Select(role => new Roles
+                {
+                    Id = role.Id,
+                    Name = role.Name
+                })
+                .ToList();
 
-            return Ok(roleList);
+            return Ok(filteredRoles);
         }
 
         [Authorize(Roles = "Admin")]

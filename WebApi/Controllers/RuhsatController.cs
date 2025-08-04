@@ -636,6 +636,41 @@ namespace WebApi.Controllers
             return Content(htmlContent, "text/html");
         }
 
+        [HttpGet("permits-count")]
+        public async Task<ActionResult<PermitResponse>> GetPermitCount()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var permits = await _ruhsatService.GetRuhsat(user.OrganizationId);
+
+            var permitsList = permits.Select(permit => new Permit
+            {
+                Id = permit.Id,
+                RuhsatNo = permit.RuhsatNo,
+                TcKimlikNo = permit.TcKimlikNo,
+                FullName = permit.Adi + " " + permit.Soyadi,
+                IsyeriUnvani = permit.IsyeriUnvani,
+                FaaliyetKonusuName = permit.FaaliyetKonusu.Name,
+                RuhsatTuruName = permit.RuhsatTuru.Name,
+                VerilisTarihi = permit.VerilisTarihi,
+                IsActive = permit.IsActive ? "Aktif" : "Pasif",
+                PhotoPath = permit.PhotoPath,
+                ScannedFilePath = permit.ScannedFilePath,
+            }).ToList();
+
+            var approvedCount = permitsList.Count(p => !string.IsNullOrEmpty(p.ScannedFilePath));
+            var unapprovedCount = permitsList.Count(p => string.IsNullOrEmpty(p.ScannedFilePath));
+
+            var response = new PermitResponse
+            {
+                TotalCount = permitsList.Count,
+                ApprovedCount = approvedCount,
+                UnapprovedCount = unapprovedCount,
+            };
+
+            return Ok(response);
+        }
+
         private int UserId()
         {
             var userIdClaim = HttpContext.User.FindFirst("userId");

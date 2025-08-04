@@ -26,6 +26,8 @@ namespace Core.Domain.User
         public string? NumaratajPersonName { get; set; }
         public string BelBaskanTitle { get; set; }
         public string Content4 { get; set; }
+        public bool NumaratajView { get; set; }
+        public bool RuhsatView { get; set; }
         public virtual ICollection<User> User { get; set; }
         public virtual ICollection<Core.Domain.Ruhsat.Ruhsat> Ruhsat { get; set; }
         public virtual ICollection<RuhsatSinifi> RuhsatSinifi { get; set; }
