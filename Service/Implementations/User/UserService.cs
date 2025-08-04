@@ -101,7 +101,7 @@ namespace Service.Implementations.User
 		#endregion
 
 		#region User
-		public int AddUser(int organizationId, string firstName, string lastName, string mail, string phone, string address, string userName, string password)
+		public int AddUser(int organizationId, string firstName, string lastName, string mail, string phone, string userName, string password)
         {
             var organization = GetOrganizationById(organizationId);
             if (organization != null)

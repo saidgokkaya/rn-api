@@ -277,12 +277,6 @@ namespace WebApi.Controllers
             var userId = UserId();
             var org = _userService.GetUserById(userId);
 
-            DateTime? dateOfBirth = null;
-            if (DateTime.TryParse(user.DateOfBirth, out var parsedDate))
-            {
-                dateOfBirth = parsedDate.ToUniversalTime();
-            }
-
             var firstName = _defaultValues.RemoveDiacritics(user.FirstName.ToLower());
             var lastName = _defaultValues.RemoveDiacritics(user.LastName.ToLower());
             var username = firstName + "." + lastName;
@@ -292,7 +286,7 @@ namespace WebApi.Controllers
             var passwordHash = _defaultValues.HashPassword(password);
 
             var newUser = _userService.AddUser(org.OrganizationId, user.FirstName, user.LastName, user.Mail,
-                user.Phone, user.Address, username, passwordHash);
+                user.Phone, username, passwordHash);
 
             if (newUser == 0)
             {
