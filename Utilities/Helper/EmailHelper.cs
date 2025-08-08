@@ -17,14 +17,14 @@ namespace Utilities.Helper
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
-                    Credentials = new NetworkCredential("gokkayasaid.o@gmail.com", "dsns jkkj ksue zpxl"),//google hesabından Uygulama Şifreleri
+                    Credentials = new NetworkCredential("cayluktech@gmail.com", "bkqe egwl gmms ivcm"),//google hesabından Uygulama Şifreleri
                     EnableSsl = true,
                 };
 
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(toMail),
-                    Subject = "Merhaba Dijitals Uygulamasına Hoşgeldin!",
+                    Subject = $@"Merhaba {name}, Hoşgeldin!",
                     IsBodyHtml = true,
                 };
 
@@ -43,14 +43,14 @@ namespace Utilities.Helper
                             <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""max-width: 600px; background-color: #1e1e1e; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.6);"">
                                 <tr>
                                 <td style=""background-color: #1976d2; padding: 20px; text-align: center;"">
-                                    <h2 style=""margin: 0; color: #ffffff;"">🎉 Dijitals'e Hoş Geldiniz!</h2>
+                                    <h2 style=""margin: 0; color: #ffffff;"">🎉 Hoş Geldiniz!</h2>
                                 </td>
                                 </tr>
                                 <tr>
                                 <td style=""padding: 30px; color: #e0e0e0;"">
                                     <p style=""font-size: 16px; margin-bottom: 20px;"">Sayın <strong>{name}</strong>,</p>
                                     <p style=""font-size: 15px; line-height: 1.6;"">
-                                    Dijitals ailesine katıldığınız için teşekkür ederiz. Aşağıda sistemimize giriş yapabilmeniz için gerekli bilgiler yer almaktadır. Lütfen bu bilgileri gizli tutunuz.
+                                    Aşağıda sistemimize giriş yapabilmeniz için gerekli bilgiler yer almaktadır. Lütfen bu bilgileri gizli tutunuz.
                                     </p>
                                     <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""margin-top: 25px; background-color: #2c2c2c; border-radius: 6px; padding: 20px;"">
                                     <tr>
@@ -71,8 +71,7 @@ namespace Utilities.Helper
                                 </tr>
                                 <tr>
                                 <td style=""background-color: #1a1a1a; text-align: center; padding: 20px; font-size: 12px; color: #666;"">
-                                    © 2025 Dijitals – Tüm hakları saklıdır.<br />
-                                    <a href=""https://dijitals.app"" style=""color: #666; text-decoration: none;"">dijitals.app</a>
+                                    © 2025 Cayluk Tech – Tüm hakları saklıdır.<br />
                                 </td>
                                 </tr>
                             </table>
