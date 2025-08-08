@@ -270,7 +270,6 @@ namespace WebApi.Controllers
             return Ok(filteredRoles);
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost("add-user")]
         public IActionResult AddUser([FromBody] AddUser user)
         {
@@ -316,7 +315,6 @@ namespace WebApi.Controllers
             });
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost("update-admin-user")]
         public IActionResult UpdateAdminUser([FromBody] UpdateUser user)
         {
@@ -346,7 +344,6 @@ namespace WebApi.Controllers
             return Ok(new { success = true });
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost("update-user")]
         public IActionResult UpdateUser([FromBody] UpdateUser user)
         {
@@ -374,7 +371,6 @@ namespace WebApi.Controllers
             return Ok(new { success = true });
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost("update-photo")]
         public IActionResult UpdatePhoto([FromForm] AddPhoto photo)
         {
