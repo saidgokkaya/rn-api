@@ -34,7 +34,7 @@ namespace Service.Implementations.User
                 ZipCode = zipCode,
                 TaskNumber = taskNumber,
                 Phone = phone,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -52,7 +52,7 @@ namespace Service.Implementations.User
                 organization.Address = address;
                 organization.ZipCode = zipCode;
                 organization.TaskNumber = taskNumber;
-                organization.UpdateDate = DateTime.UtcNow;
+                organization.UpdateDate = DateTime.Now;
 
                 _repository.Update(organization);
                 return organization.Id;
@@ -66,7 +66,7 @@ namespace Service.Implementations.User
             if (organization != null)
             {
                 organization.IsActive = !organization.IsActive;
-                organization.UpdateDate = DateTime.UtcNow;
+                organization.UpdateDate = DateTime.Now;
 
                 _repository.Update(organization);
                 return organization.Id;
@@ -80,7 +80,7 @@ namespace Service.Implementations.User
             if (organization != null)
             {
                 organization.IsDeleted = !organization.IsDeleted;
-                organization.UpdateDate = DateTime.UtcNow;
+                organization.UpdateDate = DateTime.Now;
 
                 _repository.Update(organization);
                 return organization.Id;
@@ -115,7 +115,7 @@ namespace Service.Implementations.User
                     Phone = phone,
                     UserName = userName,
                     Password = password,
-                    InsertedDate = DateTime.UtcNow,
+                    InsertedDate = DateTime.Now,
 					IsActive = true,
                     IsDeleted = false
                 };
@@ -132,7 +132,7 @@ namespace Service.Implementations.User
             if (user != null)
             {
                 user.Password = password;
-                user.UpdateDate = DateTime.UtcNow;
+                user.UpdateDate = DateTime.Now;
 
                 _repository.Update(user);
                 return user.Id;
@@ -146,7 +146,7 @@ namespace Service.Implementations.User
             if (user != null)
             {
                 user.PhotoPath = photoUrl;
-                user.UpdateDate = DateTime.UtcNow;
+                user.UpdateDate = DateTime.Now;
 
                 _repository.Update(user);
                 return user.Id;
@@ -163,7 +163,7 @@ namespace Service.Implementations.User
                 user.LastName = lastName;
                 user.Mail = mail;
                 user.Phone = phone;
-                user.UpdateDate = DateTime.UtcNow;
+                user.UpdateDate = DateTime.Now;
 
                 _repository.Update(user);
                 return user.Id;
@@ -177,7 +177,7 @@ namespace Service.Implementations.User
             if (user != null)
             {
                 user.IsActive = !user.IsActive;
-                user.UpdateDate = DateTime.UtcNow;
+                user.UpdateDate = DateTime.Now;
 
                 _repository.Update(user);
                 return user.Id;
@@ -191,7 +191,7 @@ namespace Service.Implementations.User
             if (user != null)
             {
                 user.IsDeleted = !user.IsDeleted;
-                user.UpdateDate = DateTime.UtcNow;
+                user.UpdateDate = DateTime.Now;
 
                 _repository.Update(user);
                 return user.Id;

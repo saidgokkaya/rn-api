@@ -29,7 +29,7 @@ namespace Service.Implementations.Numarataj
             {
                 Name = name,
                 OrganizationId = organizationId,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -44,7 +44,7 @@ namespace Service.Implementations.Numarataj
             if (mahalle != null)
             {
                 mahalle.Name = name;
-                mahalle.UpdateDate = DateTime.UtcNow;
+                mahalle.UpdateDate = DateTime.Now;
 
                 _repository.Update(mahalle);
                 return mahalle.Id;
@@ -58,7 +58,7 @@ namespace Service.Implementations.Numarataj
             if (mahalle != null)
             {
                 mahalle.IsDeleted = !mahalle.IsDeleted;
-                mahalle.UpdateDate = DateTime.UtcNow;
+                mahalle.UpdateDate = DateTime.Now;
 
                 _repository.Update(mahalle);
                 return mahalle.Id;
@@ -100,7 +100,7 @@ namespace Service.Implementations.Numarataj
                 NumaratajType = type,
                 MahalleId = mahalleId,
                 OrganizationId = organizationId,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -130,7 +130,7 @@ namespace Service.Implementations.Numarataj
                 numarataj.Parsel = parsel;
                 numarataj.NumaratajType = type;
                 numarataj.MahalleId = mahalleId;
-                numarataj.UpdateDate = DateTime.UtcNow;
+                numarataj.UpdateDate = DateTime.Now;
 
                 _repository.Update(numarataj);
                 return numarataj.Id;
@@ -144,7 +144,7 @@ namespace Service.Implementations.Numarataj
             if (numarataj != null)
             {
                 numarataj.IsActive = !numarataj.IsActive;
-                numarataj.UpdateDate = DateTime.UtcNow;
+                numarataj.UpdateDate = DateTime.Now;
 
                 _repository.Update(numarataj);
                 return numarataj.Id;
@@ -158,7 +158,7 @@ namespace Service.Implementations.Numarataj
             if (numarataj != null)
             {
                 numarataj.IsDeleted = !numarataj.IsDeleted;
-                numarataj.UpdateDate = DateTime.UtcNow;
+                numarataj.UpdateDate = DateTime.Now;
 
                 _repository.Update(numarataj);
                 return numarataj.Id;

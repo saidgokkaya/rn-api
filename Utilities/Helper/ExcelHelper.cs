@@ -201,6 +201,42 @@ namespace Utilities.Helper
                 };
             }
         }
+
+        public byte[] GenerateLogExcelFile(List<LogExcelDto> log)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Numarataj Verileri");
+
+                worksheet.Cell(1, 1).Value = "E-Posta";
+                worksheet.Cell(1, 2).Value = "Ad Soyad";
+                worksheet.Cell(1, 3).Value = "Ana Modül";
+                worksheet.Cell(1, 4).Value = "Alt Modül";
+                worksheet.Cell(1, 5).Value = "Yapılan İşlem";
+                worksheet.Cell(1, 6).Value = "Tarih";
+
+                for (int i = 0; i < log.Count; i++)
+                {
+                    var row = i + 2;
+                    var item = log[i];
+
+                    worksheet.Cell(row, 1).Value = item.UserEmail;
+                    worksheet.Cell(row, 2).Value = item.UserName;
+                    worksheet.Cell(row, 3).Value = item.BaseModule;
+                    worksheet.Cell(row, 4).Value = item.ModuleName;
+                    worksheet.Cell(row, 5).Value = item.ProcessName;
+                    worksheet.Cell(row, 6).Value = item.Tarih.ToString("dd.MM.yyyy HH:mm");
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    return stream.ToArray();
+                }
+            }
+        }
     }
 
     public class NumaratajExcelDto
@@ -223,5 +259,15 @@ namespace Utilities.Helper
         public string BlokAdi { get; set; }
         public string NumaratajType { get; set; }
         public int numType { get; set; }
+    }
+
+    public class LogExcelDto
+    {
+        public string UserName { get; set; }
+        public string UserEmail { get; set; }
+        public string ModuleName { get; set; }
+        public string ProcessName { get; set; }
+        public string BaseModule { get; set; }
+        public DateTime Tarih { get; set; }
     }
 }

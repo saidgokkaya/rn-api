@@ -1,13 +1,17 @@
 ﻿using Core.Domain.Numarataj;
 using Core.Domain.User;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Service.Implementations.Log;
 using Service.Implementations.Numarataj;
 using Service.Implementations.Ruhsat;
 using Service.Implementations.User;
+using System;
 using System.Drawing;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
@@ -26,6 +30,7 @@ namespace WebApi.Controllers
         private readonly ILogger<NumaratajController> _logger;
         private readonly UserService _userService;
         private readonly NumaratajService _numaratajService;
+        private readonly LogService _logService;
         private readonly DefaultValues _defaultValues;
         private readonly PdfHelper _pdfHelper;
         private readonly ExcelHelper _excelHelper;
@@ -35,6 +40,7 @@ namespace WebApi.Controllers
             _logger = logger;
             _userService = new UserService();
             _numaratajService = new NumaratajService();
+            _logService = new LogService();
             _defaultValues = new DefaultValues();
             _pdfHelper = new PdfHelper();
             _excelHelper = new ExcelHelper();
@@ -96,17 +102,20 @@ namespace WebApi.Controllers
 
             foreach (var add in templatesToAdd)
             {
-                _numaratajService.AddMahalle(user.OrganizationId, add.Name);
+                var addId = _numaratajService.AddMahalle(user.OrganizationId, add.Name);
+                _logService.AddLog(user.OrganizationId, user.Id, "Mahalle", add.Name + " isimli mahalle oluşturuldu.", "Numarataj", addId);
             }
 
             foreach (var update in templatesToUpdate)
             {
                 _numaratajService.UpdateMahalle(update.Id.Value, update.Name);
+                _logService.AddLog(user.OrganizationId, user.Id, "Mahalle", update.Name + " isimli mahalle güncellendi.", "Numarataj", update.Id.Value);
             }
 
             foreach (var delete in templatesToRemove)
             {
                 _numaratajService.IsDeletedMahalle(delete.Id);
+                _logService.AddLog(user.OrganizationId, user.Id, "Mahalle", delete.Name + " isimli mahalle silindi.", "Numarataj", delete.Id);
             }
 
             return Ok(1);
@@ -118,8 +127,12 @@ namespace WebApi.Controllers
             var userId = UserId();
             var user = _userService.GetUserById(userId);
 
-            _numaratajService.AddNumarataj(user.OrganizationId, model.TcKimlikNo, model.AdSoyad, model.Telefon, model.CaddeSokak, model.DisKapi,
+            var add = _numaratajService.AddNumarataj(user.OrganizationId, model.TcKimlikNo, model.AdSoyad, model.Telefon, model.CaddeSokak, model.DisKapi,
                 model.IcKapiNo, model.SiteAdi, model.EskiAdres, model.BlokAdi, model.AdresNo, model.IsYeriUnvani, model.Ada, model.Parsel, model.NumaratajType, model.MahalleId);
+
+            var num = _numaratajService.GetNumaratajById(add);
+
+            _logService.AddLog(user.OrganizationId, user.Id, "Numarataj", num.Id + " belge nolu numarataj eklendi.", "Numarataj", add);
 
             return Ok(1);
         }
@@ -154,6 +167,8 @@ namespace WebApi.Controllers
 
             _numaratajService.UpdateNumarataj(model.Id, model.TcKimlikNo, model.AdSoyad, model.Telefon, model.CaddeSokak, model.DisKapi,
                 model.IcKapiNo, model.SiteAdi, model.EskiAdres, model.BlokAdi, model.AdresNo, model.IsYeriUnvani, model.Ada, model.Parsel, model.NumaratajType, model.MahalleId);
+
+            _logService.AddLog(user.OrganizationId, user.Id, "Numarataj", model.Id + " belge nolu numarataj güncellendi.", "Numarataj", model.Id);
 
             return Ok(1);
         }
@@ -218,28 +233,39 @@ namespace WebApi.Controllers
         [HttpPost("numbering-status")]
         public async Task<IActionResult> NumberingStatus(int id)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
             var status = _numaratajService.IsActiveNumarataj(id);
             if (status == 0)
             {
                 return BadRequest();
             }
+
+            _logService.AddLog(user.OrganizationId, user.Id, "Numarataj", id + " belge nolu numarataj durumu güncellendi.", "Numarataj", id);
             return Ok(1);
         }
 
         [HttpPost("delete-numbering")]
         public IActionResult DeleteNumbering(int id)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
             var deleteNumbering = _numaratajService.IsDeletedNumarataj(id);
             if (deleteNumbering == 0)
             {
                 return Ok(new { success = false });
             }
+
+            _logService.AddLog(user.OrganizationId, user.Id, "Numarataj", id + " belge nolu numarataj silindi.", "Numarataj", id);
             return Ok(new { success = true });
         }
 
         [HttpPost("delete-numberings")]
         public IActionResult DeleteNumberings([FromBody] DeleteNumberings numberings)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+
             foreach (var numbering in numberings.NumberingIds)
             {
                 var deleteNumbering = _numaratajService.IsDeletedNumarataj(numbering);
@@ -247,6 +273,8 @@ namespace WebApi.Controllers
                 {
                     return Ok(new { success = false });
                 }
+
+                _logService.AddLog(user.OrganizationId, user.Id, "Numarataj", numbering + " belge nolu numarataj silindi.", "Numarataj", numbering);
             }
             return Ok(new { success = true });
         }

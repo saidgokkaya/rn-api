@@ -57,6 +57,7 @@ namespace Core.Data
         public DbSet<DepoBilgi> DepoBilgi { get; set; }
         public DbSet<Mahalle> Mahalle { get; set; }
         public DbSet<Numarataj> Numarataj { get; set; }
+        public DbSet<Log> Log { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -119,6 +120,18 @@ namespace Core.Data
                 .HasOne(db => db.Organization)
                 .WithMany(r => r.Mahalle)
                 .HasForeignKey(db => db.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Log>()
+                .HasOne(r => r.Organization)
+                .WithMany(rs => rs.Log)
+                .HasForeignKey(r => r.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Log>()
+                .HasOne(db => db.User)
+                .WithMany(o => o.Log)
+                .HasForeignKey(db => db.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

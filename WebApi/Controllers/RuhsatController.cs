@@ -1,15 +1,21 @@
 ﻿using AdminPanel.Models.Organization.User;
 using Core.Domain.Ruhsat;
+using Core.Domain.User;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Service.Implementations.Log;
 using Service.Implementations.Ruhsat;
 using Service.Implementations.User;
 using System.Net.Http;
 using System.Text.Json;
 using Utilities.Helper;
 using WebApi.Models.Ruhsat;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WebApi.Controllers
 {
@@ -22,6 +28,7 @@ namespace WebApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly UserService _userService;
         private readonly RuhsatService _ruhsatService;
+        private readonly LogService _logService;
         private readonly DefaultValues _defaultValues;
         private readonly PdfHelper _pdfHelper;
         private readonly string _photoPath;
@@ -34,6 +41,7 @@ namespace WebApi.Controllers
             _userService = new UserService();
             _ruhsatService = new RuhsatService();
             _defaultValues = new DefaultValues();
+            _logService = new LogService();
             _pdfHelper = new PdfHelper();
             _photoPath = configuration["PhotoPath"];
             _scannedPath = configuration["ScannedFilePath"];
@@ -111,17 +119,20 @@ namespace WebApi.Controllers
 
             foreach (var add in templatesToAdd)
             {
-                _ruhsatService.AddFaaliyetKonusu(user.OrganizationId, add.Name);
+                var addId = _ruhsatService.AddFaaliyetKonusu(user.OrganizationId, add.Name);
+                _logService.AddLog(user.OrganizationId, user.Id, "Faaliyet", add.Name + " isimli faaliyet oluşturuldu.", "Ruhsat", addId);
             }
 
             foreach (var update in templatesToUpdate)
             {
                 _ruhsatService.UpdateFaaliyetKonusu(update.Id.Value, update.Name);
+                _logService.AddLog(user.OrganizationId, user.Id, "Faaliyet", update.Name + " isimli faaliyet güncellendi.", "Ruhsat", update.Id.Value);
             }
 
             foreach (var delete in templatesToRemove)
             {
                 _ruhsatService.IsDeletedFaaliyetKonusu(delete.Id);
+                _logService.AddLog(user.OrganizationId, user.Id, "Faaliyet", delete.Name + " isimli faaliyet silindi.", "Ruhsat", delete.Id);
             }
 
             return Ok(1);
@@ -204,17 +215,20 @@ namespace WebApi.Controllers
 
             foreach (var add in templatesToAdd)
             {
-                _ruhsatService.AddRuhsatSinifi(user.OrganizationId, add.Name, add.RuhsatTuruId);
+                var addId = _ruhsatService.AddRuhsatSinifi(user.OrganizationId, add.Name, add.RuhsatTuruId);
+                _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat Sınıfı", add.Name + " isimli ruhsat sınıfı eklendi.", "Ruhsat", addId);
             }
 
             foreach (var update in templatesToUpdate)
             {
                 _ruhsatService.UpdateRuhsatSinifi(update.Id.Value, update.Name, update.RuhsatTuruId);
+                _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat Sınıfı", update.Name + " isimli ruhsat sınıfı güncellendi.", "Ruhsat", update.Id.Value);
             }
 
             foreach (var delete in templatesToRemove)
             {
                 _ruhsatService.IsDeletedRuhsatSinifi(delete.Id);
+                _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat Sınıfı", delete.Name + " isimli ruhsat sınıfı silindi.", "Ruhsat", delete.Id);
             }
 
             return Ok(1);
@@ -297,17 +311,20 @@ namespace WebApi.Controllers
 
             foreach (var add in templatesToAdd)
             {
-                _ruhsatService.AddDepo(user.OrganizationId, add.Name, add.RuhsatSinifiId);
+                var addId = _ruhsatService.AddDepo(user.OrganizationId, add.Name, add.RuhsatSinifiId);
+                _logService.AddLog(user.OrganizationId, user.Id, "Depo", add.Name + " isimli depo eklendi.", "Ruhsat", addId);
             }
 
             foreach (var update in templatesToUpdate)
             {
                 _ruhsatService.UpdateDepo(update.Id.Value, update.Name, update.RuhsatSinifiId);
+                _logService.AddLog(user.OrganizationId, user.Id, "Depo", update.Name + " isimli depo güncellendi.", "Ruhsat", update.Id.Value);
             }
 
             foreach (var delete in templatesToRemove)
             {
                 _ruhsatService.IsDeletedDepo(delete.Id);
+                _logService.AddLog(user.OrganizationId, user.Id, "Depo", delete.Adi + " isimli depo silindi.", "Ruhsat", delete.Id);
             }
 
             return Ok(1);
@@ -320,7 +337,7 @@ namespace WebApi.Controllers
             var user = _userService.GetUserById(userId);
             var permits = await _ruhsatService.GetRuhsat(user.OrganizationId);
 
-            var permitsList = permits.Select(permit => new Permit
+            var permitsList = permits.OrderByDescending(log => log.InsertedDate).Select(permit => new Permit
             {
                 Id = permit.Id,
                 RuhsatNo = permit.RuhsatNo,
@@ -341,35 +358,47 @@ namespace WebApi.Controllers
         [HttpPost("permit-status")]
         public async Task<IActionResult> PermitStatus(int id)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var ruhsat = _ruhsatService.GetRuhsatById(id);
             var status = _ruhsatService.IsActiveRuhsat(id);
             if (status == 0)
             {
-                return BadRequest(); 
+                return BadRequest();
             }
+            _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsat.RuhsatNo + " nolu ruhsat durumu güncellendi.", "Ruhsat", id);
             return Ok(1);
         }
 
         [HttpPost("delete-permit")]
         public IActionResult DeleteUser(int id)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var ruhsat = _ruhsatService.GetRuhsatById(id);
             var deletePermit = _ruhsatService.IsDeletedRuhsat(id);
             if (deletePermit == 0)
             {
                 return Ok(new { success = false });
             }
+            _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsat.RuhsatNo + " nolu ruhsat silindi.", "Ruhsat", id);
             return Ok(new { success = true });
         }
 
         [HttpPost("delete-permits")]
         public IActionResult DeletePermits([FromBody] DeletePermits permits)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
             foreach (var permit in permits.PermitIds)
             {
+                var ruhsat = _ruhsatService.GetRuhsatById(permit);
                 var deletePermit = _ruhsatService.IsDeletedRuhsat(permit);
                 if (deletePermit == 0)
                 {
                     return Ok(new { success = false });
                 }
+                _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsat.RuhsatNo + " nolu ruhsat silindi.", "Ruhsat", permit);
             }
             return Ok(new { success = true });
         }
@@ -414,6 +443,8 @@ namespace WebApi.Controllers
             }
 
             var add = _ruhsatService.AddRuhsat(user.OrganizationId, dto.ActivityId, dto.TurId, dto.ClassId, dto.RuhsatNo, dto.TcKimlikNo, dto.Adi, dto.Soyadi, dto.IsyeriUnvani, dto.VerilisTarihi, dto.Ada, dto.Parsel, dto.Pafta, dto.Adres, dto.Not, fileName);
+            var ruhsat = _ruhsatService.GetRuhsatById(add);
+            _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsat.RuhsatNo + " nolu ruhsat eklendi.", "Ruhsat", add);
 
             if (warehouses is not null && warehouses.Any())
             {
@@ -423,7 +454,8 @@ namespace WebApi.Controllers
                     var depo = _ruhsatService.GetDepoById(warehouseId);
                     var value = entry.Value;
 
-                    _ruhsatService.AddDepoBilgi(user.OrganizationId, add, warehouseId, depo.Adi, value);
+                    var addDepoBilgi = _ruhsatService.AddDepoBilgi(user.OrganizationId, add, warehouseId, depo.Adi, value);
+                    _logService.AddLog(user.OrganizationId, user.Id, "Depo Bilgi", depo.Adi + " isimli depo için depo bilgisi ruhsata eklendi.", "Ruhsat", addDepoBilgi);
                 }
             }
 
@@ -525,6 +557,8 @@ namespace WebApi.Controllers
             }
 
             var update = _ruhsatService.UpdateRuhsat(dto.Id, user.OrganizationId, dto.ActivityId, dto.TurId, dto.ClassId, dto.RuhsatNo, dto.TcKimlikNo, dto.Adi, dto.Soyadi, dto.IsyeriUnvani, dto.VerilisTarihi, dto.Ada, dto.Parsel, dto.Pafta, dto.Adres, dto.Not);
+            var ruhsatUpdate = _ruhsatService.GetRuhsatById(update);
+            _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsatUpdate.RuhsatNo + " nolu ruhsat güncellendi.", "Ruhsat", update);
 
             if (warehouses is not null && warehouses.Any())
             {
@@ -539,7 +573,8 @@ namespace WebApi.Controllers
                     var depo = _ruhsatService.GetDepoById(warehouseId);
                     var value = entry.Value;
 
-                    _ruhsatService.AddDepoBilgi(user.OrganizationId, dto.Id, warehouseId, depo.Adi, value);
+                    var addDepoBilgi = _ruhsatService.AddDepoBilgi(user.OrganizationId, dto.Id, warehouseId, depo.Adi, value);
+                    _logService.AddLog(user.OrganizationId, user.Id, "Depo Bilgi", depo.Adi + " isimli depo için depo bilgisi ruhsata eklendi.", "Ruhsat", addDepoBilgi);
                 }
             }
 
@@ -550,6 +585,10 @@ namespace WebApi.Controllers
         [RequestSizeLimit(20_000_000)]
         public async Task<IActionResult> UploadScannedFile([FromForm] IFormFile file, [FromForm] int id)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var ruhsatUpdate = _ruhsatService.GetRuhsatById(id);
+
             if (file == null || file.Length == 0)
                 return BadRequest("Dosya seçilmedi.");
 
@@ -568,6 +607,7 @@ namespace WebApi.Controllers
             }
 
             var ruhsat = _ruhsatService.UpdateScannedPdf(id,fileName);
+            _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsatUpdate.RuhsatNo + " nolu ruhsata taranmış belge eklendi.", "Ruhsat", id);
 
             return Ok(new { scannedFilePath = fileName });
         }
@@ -575,6 +615,8 @@ namespace WebApi.Controllers
         [HttpPost("delete-scanned-file")]
         public IActionResult DeleteScannedFile(int id)
         {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
             var ruhsat = _ruhsatService.GetRuhsatById(id);
 
             if (ruhsat == null || string.IsNullOrEmpty(ruhsat.ScannedFilePath))
@@ -588,6 +630,7 @@ namespace WebApi.Controllers
             }
 
             _ruhsatService.UpdateScannedPdf(id, null);
+            _logService.AddLog(user.OrganizationId, user.Id, "Ruhsat", ruhsat.RuhsatNo + " nolu ruhsatta taranmış belge silindi.", "Ruhsat", id);
 
             return Ok("Silindi");
         }

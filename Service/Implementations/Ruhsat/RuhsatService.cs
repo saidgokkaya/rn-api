@@ -27,7 +27,7 @@ namespace Service.Implementations.Ruhsat
             {
                 Name = name,
                 OrganizationId = organizationId,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -42,7 +42,7 @@ namespace Service.Implementations.Ruhsat
             if (faaliyetKonusu != null)
             {
                 faaliyetKonusu.Name = name;
-                faaliyetKonusu.UpdateDate = DateTime.UtcNow;
+                faaliyetKonusu.UpdateDate = DateTime.Now;
 
                 _repository.Update(faaliyetKonusu);
                 return faaliyetKonusu.Id;
@@ -56,7 +56,7 @@ namespace Service.Implementations.Ruhsat
             if (faaliyetKonusu != null)
             {
                 faaliyetKonusu.IsDeleted = !faaliyetKonusu.IsDeleted;
-                faaliyetKonusu.UpdateDate = DateTime.UtcNow;
+                faaliyetKonusu.UpdateDate = DateTime.Now;
 
                 _repository.Update(faaliyetKonusu);
                 return faaliyetKonusu.Id;
@@ -92,7 +92,7 @@ namespace Service.Implementations.Ruhsat
                 Name = name,
                 OrganizationId = organizationId,
                 RuhsatTuruId = ruhsatTuruId,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -108,7 +108,7 @@ namespace Service.Implementations.Ruhsat
             {
                 ruhsatSinifi.Name = name;
                 ruhsatSinifi.RuhsatTuruId = ruhsatTuruId;
-                ruhsatSinifi.UpdateDate = DateTime.UtcNow;
+                ruhsatSinifi.UpdateDate = DateTime.Now;
 
                 _repository.Update(ruhsatSinifi);
                 return ruhsatSinifi.Id;
@@ -122,7 +122,7 @@ namespace Service.Implementations.Ruhsat
             if (ruhsatSinifi != null)
             {
                 ruhsatSinifi.IsDeleted = !ruhsatSinifi.IsDeleted;
-                ruhsatSinifi.UpdateDate = DateTime.UtcNow;
+                ruhsatSinifi.UpdateDate = DateTime.Now;
 
                 _repository.Update(ruhsatSinifi);
                 return ruhsatSinifi.Id;
@@ -156,7 +156,7 @@ namespace Service.Implementations.Ruhsat
                 Adi = name,
                 OrganizationId = organizationId,
                 RuhsatSinifiId = ruhsatSinifiId,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -172,7 +172,7 @@ namespace Service.Implementations.Ruhsat
             {
                 depo.Adi = name;
                 depo.RuhsatSinifiId = ruhsatSinifiId;
-                depo.UpdateDate = DateTime.UtcNow;
+                depo.UpdateDate = DateTime.Now;
 
                 _repository.Update(depo);
                 return depo.Id;
@@ -186,7 +186,7 @@ namespace Service.Implementations.Ruhsat
             if (depo != null)
             {
                 depo.IsDeleted = !depo.IsDeleted;
-                depo.UpdateDate = DateTime.UtcNow;
+                depo.UpdateDate = DateTime.Now;
 
                 _repository.Update(depo);
                 return depo.Id;
@@ -249,7 +249,7 @@ namespace Service.Implementations.Ruhsat
                 Adres = adres,
                 Not = not,
                 PhotoPath = photoPath,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -293,7 +293,7 @@ namespace Service.Implementations.Ruhsat
                 ruhsat.Pafta = pafta;
                 ruhsat.Adres = adres;
                 ruhsat.Not = not;
-                ruhsat.UpdateDate = DateTime.UtcNow;
+                ruhsat.UpdateDate = DateTime.Now;
 
                 _repository.Update(ruhsat);
                 return ruhsat.Id;
@@ -333,7 +333,7 @@ namespace Service.Implementations.Ruhsat
             if (ruhsat != null)
             {
                 ruhsat.IsActive = !ruhsat.IsActive;
-                ruhsat.UpdateDate = DateTime.UtcNow;
+                ruhsat.UpdateDate = DateTime.Now;
 
                 _repository.Update(ruhsat);
                 return ruhsat.Id;
@@ -347,7 +347,7 @@ namespace Service.Implementations.Ruhsat
             if (ruhsat != null)
             {
                 ruhsat.IsDeleted = !ruhsat.IsDeleted;
-                ruhsat.UpdateDate = DateTime.UtcNow;
+                ruhsat.UpdateDate = DateTime.Now;
 
                 _repository.Update(ruhsat);
                 return ruhsat.Id;
@@ -395,7 +395,7 @@ namespace Service.Implementations.Ruhsat
                 DepoId = depoId,
                 DepoAdi = adi,
                 Bilgi = bilgi,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -410,7 +410,7 @@ namespace Service.Implementations.Ruhsat
             if (depoBilgi != null)
             {
                 depoBilgi.IsDeleted = !depoBilgi.IsDeleted;
-                depoBilgi.UpdateDate = DateTime.UtcNow;
+                depoBilgi.UpdateDate = DateTime.Now;
 
                 _repository.Update(depoBilgi);
                 return depoBilgi.Id;

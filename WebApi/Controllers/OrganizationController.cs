@@ -5,10 +5,14 @@ using Core.Domain.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implementations.Log;
+using Service.Implementations.Numarataj;
 using Service.Implementations.User;
 using System.Globalization;
 using System.Xml;
 using Utilities.Helper;
+using WebApi.Models.Log;
+using WebApi.Models.Numarataj;
 using WebApi.Models.Organization.User;
 
 namespace WebApi.Controllers
@@ -21,19 +25,22 @@ namespace WebApi.Controllers
         private readonly ILogger<OrganizationController> _logger;
         private readonly IConfiguration _configuration;
         private readonly UserService _userService;
+        private readonly LogService _logService;
         private readonly DefaultValues _defaultValues;
         private readonly EmailHelper _emailHelper;
+        private readonly ExcelHelper _excelHelper;
 
         public OrganizationController(ILogger<OrganizationController> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configuration = configuration;
             _userService = new UserService();
+            _logService = new LogService();
             _defaultValues = new DefaultValues();
             _emailHelper = new EmailHelper();
+            _excelHelper = new ExcelHelper();
         }
 
-        [Authorize]
         [HttpGet("settings")]
         public IActionResult GetSettings()
         {
@@ -482,6 +489,50 @@ namespace WebApi.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpGet("log")]
+        public async Task<ActionResult<IEnumerable<Logs>>> GetLogs()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var logs = await _logService.GetLogs(user.OrganizationId);
+
+            var logsList = logs.OrderByDescending(log => log.InsertedDate).Select(log => new Logs
+            {
+                Id = log.Id,
+                UserName = log.User.FirstName + " " + log.User.LastName,
+                UserEmail = log.User.Mail,
+                ModuleName = log.ModuleName,
+                ProcessName = log.ProcessName,
+                BaseModule = log.BaseModule,
+                InsertedDate = log.InsertedDate
+            }).ToList();
+
+            return Ok(logsList);
+        }
+
+        [HttpPost("log-export-excel")]
+        public async Task<IActionResult> ExportExcel([FromBody] LogExportRequest request)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var logs = await _logService.GetLogExcel(request.LogIds, user.OrganizationId);
+
+            var dtoList = logs.OrderByDescending(log => log.InsertedDate).Select(r => new LogExcelDto
+            {
+                UserEmail = r.User.Mail,
+                UserName = r.User.FirstName + " " + r.User.LastName,
+                ModuleName = r.ModuleName,
+                ProcessName = r.ProcessName,
+                BaseModule = r.BaseModule,
+                Tarih = r.InsertedDate.Value,
+            }).ToList();
+
+            var fileBytes = _excelHelper.GenerateLogExcelFile(dtoList);
+
+            var fileName = $"Log_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         private int UserId()

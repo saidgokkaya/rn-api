@@ -18,5 +18,6 @@ namespace Core.Domain.User
         public int OrganizationId { get; set; }
         public virtual Organization Organization { get; set; }
         public virtual ICollection<UserRole> UserRole { get; set; }
+        public virtual ICollection<Log> Log { get; set; }
     }
 }

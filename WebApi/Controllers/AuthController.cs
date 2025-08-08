@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implementations.Log;
 using Service.Implementations.User;
 using Utilities.Helper;
 using WebApi.JwtService;
@@ -15,6 +16,7 @@ namespace WebApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly WebApi.JwtService.JwtService _jwtService;
         private readonly UserService _userService;
+        private readonly LogService _logService;
         private readonly DefaultValues _defaultValues;
 
         public AuthController(WebApi.JwtService.JwtService jwtService, IConfiguration configuration)
@@ -22,6 +24,7 @@ namespace WebApi.Controllers
             _jwtService = jwtService;
             _configuration = configuration;
             _userService = new UserService();
+            _logService = new LogService();
             _defaultValues = new DefaultValues();
         }
 
@@ -35,6 +38,11 @@ namespace WebApi.Controllers
 
             var roles = _userService.GetUserRole(user.Id).Select(ur => ur.Role.Name).ToList();
             var token = _jwtService.GenerateToken(user, roles);
+
+            if (token != null)
+            {
+                _logService.AddLog(user.OrganizationId, user.Id, "Kullanıcı", "Giriş yaptı.", "Kullanıcı", 0);
+            }
 
             return Ok(new { IsSuccess = true, Token = token });
         }

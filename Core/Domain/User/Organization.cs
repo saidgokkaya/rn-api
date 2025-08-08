@@ -36,5 +36,6 @@ namespace Core.Domain.User
         public virtual ICollection<DepoBilgi> DepoBilgi { get; set; }
         public virtual ICollection<Mahalle> Mahalle { get; set; }
         public virtual ICollection<Numarataj.Numarataj> Numarataj { get; set; }
+        public virtual ICollection<Log> Log { get; set; }
     }
 }
