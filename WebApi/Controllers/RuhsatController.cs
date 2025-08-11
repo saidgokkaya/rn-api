@@ -673,9 +673,57 @@ namespace WebApi.Controllers
                 Content3 = org?.Content3,
                 Content4 = org?.Content4,
                 BelBaskanTitle = org?.BelBaskanTitle,
+                Paraf = org?.Paraf,
+                ParafTitle = org?.ParafTitle,
             };
 
             var htmlContent = _pdfHelper.GenerateCertificateHtml(dto);
+            return Content(htmlContent, "text/html");
+        }
+
+        [HttpGet("download-certificate-paraf")]
+        public IActionResult GetCertificateParafHtml(int id)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var org = _userService.GetOrganizationById(user.OrganizationId);
+            var ruhsat = _ruhsatService.GetRuhsatByIdFirst(user.OrganizationId, id);
+
+            if (ruhsat == null)
+                return NotFound("Ruhsat bulunamadı.");
+
+            var dto = new RuhsatDto
+            {
+                Id = ruhsat.Id,
+                TcKimlikNo = ruhsat.TcKimlikNo,
+                Adi = ruhsat.Adi,
+                Soyadi = ruhsat.Soyadi,
+                IsyeriUnvani = ruhsat.IsyeriUnvani,
+                FaaliyetKonusu = new FaaliyetKonusuDto { Name = ruhsat.FaaliyetKonusu?.Name },
+                Adres = ruhsat.Adres,
+                Ada = ruhsat.Ada,
+                Pafta = ruhsat.Pafta,
+                Parsel = ruhsat.Parsel,
+                RuhsatTuru = new RuhsatTuruDto { Name = ruhsat.RuhsatTuru?.Name },
+                RuhsatSinifi = ruhsat.RuhsatSinifi != null ? new RuhsatSinifiDto { Name = ruhsat.RuhsatSinifi.Name } : null,
+                VerilisTarihi = ruhsat.VerilisTarihi,
+                RuhsatNo = ruhsat.RuhsatNo,
+                PhotoPath = _photoPath + "/" + ruhsat.PhotoPath,
+                DepoBilgileri = ruhsat.DepoBilgi.Count != 0 ? ruhsat.DepoBilgi.Select(d => new DepoBilgiDto { Bilgi = d.Bilgi }).ToList() : null,
+                BelName = org?.BelName,
+                LogoUrl = org?.LogoUrl,
+                BelBaskan = org?.BelBaskan,
+                BelTitle = org?.BelTitle,
+                Content1 = org?.Content1,
+                Content2 = org?.Content2,
+                Content3 = org?.Content3,
+                Content4 = org?.Content4,
+                BelBaskanTitle = org?.BelBaskanTitle,
+                Paraf = org?.Paraf,
+                ParafTitle = org?.ParafTitle,
+            };
+
+            var htmlContent = _pdfHelper.GenerateCertificateParafHtml(dto);
             return Content(htmlContent, "text/html");
         }
 

@@ -28,6 +28,8 @@ namespace Core.Domain.User
         public string Content4 { get; set; }
         public bool NumaratajView { get; set; }
         public bool RuhsatView { get; set; }
+        public string? Paraf { get; set; }
+        public string? ParafTitle { get; set; }
         public virtual ICollection<User> User { get; set; }
         public virtual ICollection<Core.Domain.Ruhsat.Ruhsat> Ruhsat { get; set; }
         public virtual ICollection<RuhsatSinifi> RuhsatSinifi { get; set; }
