@@ -57,6 +57,30 @@ namespace WebApi.Controllers
             return Ok(settings);
         }
 
+        [HttpGet("selected-pdf-format")]
+        public IActionResult GetSelectedImage()
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var organization = _userService.GetOrganizationById(user.OrganizationId);
+            
+            return Ok(new { selectedId = organization.Cerceve });
+        }
+
+        [HttpPost("pdf-format")]
+        public async Task<IActionResult> PdfFormat(int cerceve)
+        {
+            var userId = UserId();
+            var user = _userService.GetUserById(userId);
+            var update = _userService.UpdateCerceveOrganization(user.OrganizationId, cerceve);
+            if (update == 0)
+            {
+                return BadRequest();
+            }
+
+            return Ok(1);
+        }
+
         [HttpPost("check-mail-me")]
         public async Task<IActionResult> CheckMailMe([FromBody] CheckMailRequest request)
         {

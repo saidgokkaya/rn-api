@@ -675,6 +675,7 @@ namespace WebApi.Controllers
                 BelBaskanTitle = org?.BelBaskanTitle,
                 Paraf = org?.Paraf,
                 ParafTitle = org?.ParafTitle,
+                Cerceve = org?.Cerceve
             };
 
             var htmlContent = _pdfHelper.GenerateCertificateHtml(dto);
@@ -721,6 +722,7 @@ namespace WebApi.Controllers
                 BelBaskanTitle = org?.BelBaskanTitle,
                 Paraf = org?.Paraf,
                 ParafTitle = org?.ParafTitle,
+                Cerceve = org?.Cerceve
             };
 
             var htmlContent = _pdfHelper.GenerateCertificateParafHtml(dto);

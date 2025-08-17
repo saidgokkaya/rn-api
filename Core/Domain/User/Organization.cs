@@ -30,6 +30,7 @@ namespace Core.Domain.User
         public bool RuhsatView { get; set; }
         public string? Paraf { get; set; }
         public string? ParafTitle { get; set; }
+        public int? Cerceve { get; set; }
         public virtual ICollection<User> User { get; set; }
         public virtual ICollection<Core.Domain.Ruhsat.Ruhsat> Ruhsat { get; set; }
         public virtual ICollection<RuhsatSinifi> RuhsatSinifi { get; set; }

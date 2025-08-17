@@ -60,6 +60,20 @@ namespace Service.Implementations.User
             return 0;
         }
 
+        public int UpdateCerceveOrganization(int id, int cerceve)
+        {
+            var organization = GetOrganizationById(id);
+            if (organization != null)
+            {
+                organization.Cerceve = cerceve;
+                organization.UpdateDate = DateTime.Now;
+
+                _repository.Update(organization);
+                return organization.Id;
+            }
+            return 0;
+        }
+
 		public int IsActiveOrganization(int id)
         {
             var organization = GetOrganizationById(id);

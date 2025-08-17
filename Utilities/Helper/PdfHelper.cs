@@ -25,8 +25,8 @@ namespace Utilities.Helper
                 .outer-border {
                     width: 100%;
                     max-width: 790px;
-                    min-height: 1000px;
-                    height: 1000px;
+                    min-height: 1030px;
+                    height: 1030px;
                     margin: 0 auto;
                     border: 1px solid #1D4EA4;
                     box-sizing: border-box;
@@ -44,6 +44,56 @@ namespace Utilities.Helper
                     padding: 25px;
                     box-sizing: border-box;
                     position: relative;
+                }
+                .frame1 {
+                  min-height: 930px;
+                  height: 930px;
+                  position: relative;
+                  padding: 40px;
+                  margin: 5px;
+                  border: 10px solid #b8860b;
+                  border-radius: 20px;
+                  box-shadow: inset 0 0 20px #b8860b;
+                }
+                .frame2 {
+                  min-height: 930px;
+                  height: 930px;
+                  position: relative;
+                  padding: 40px;
+                  margin: 5px;
+                  border: 8px double #2f4f4f;
+                  border-radius: 15px;
+                  box-shadow: inset 0 0 15px #2f4f4f;
+                }
+                .frame3 {
+                  min-height: 900px;
+                  height: 900px;
+                  position: relative;
+                  padding: 40px;
+                  margin: 20px;
+                  border: 14px groove goldenrod;
+                  border-radius: 10px;
+                  box-shadow: inset 0 0 30px goldenrod;
+                }
+                .frame4 {
+                    min-height: 900px;
+                    height: 900px;
+                    position: relative;
+                    padding: 40px;
+                    border-width: 30px;
+                    border-style: solid;
+                    border-image-source: url('https://rn-app-jet.vercel.app/layout-frame/gold.jpg');
+                    border-image-slice: 30;
+                }
+                .frame5 {
+                    min-height: 900px;
+                    height: 900px;
+                    position: relative;
+                    padding: 40px;
+                    border-width: 30px;
+                    border-style: solid;
+                    border-image-source: url('https://rn-app-jet.vercel.app/layout-frame/black.png');
+                    border-image-slice: 80;
                 }
                 .logo {
                     position: absolute;
@@ -94,7 +144,23 @@ namespace Utilities.Helper
             sb.AppendLine("</style>");
             sb.AppendLine("</head><body>");
 
-            sb.AppendLine("<div class='outer-border'><div class='main-border'><div class='inner-border'>");
+            if (model.Cerceve == 0)
+            {
+                sb.AppendLine("<div class='outer-border'><div class='main-border'><div class='inner-border'>");
+            }
+            else
+            {
+                string frameClass = model.Cerceve switch
+                {
+                    1 => "frame1",
+                    2 => "frame2",
+                    3 => "frame3",
+                    4 => "frame4",
+                    5 => "frame5",
+                    _ => "frame1"
+                };
+                sb.AppendLine($"<div class='{frameClass}'>");
+            }
 
             sb.AppendLine($"<img src='{logoUrl}' class='logo' alt='Logo' />");
 
@@ -170,6 +236,17 @@ namespace Utilities.Helper
             sb.AppendLine("</div>");
 
             sb.AppendLine("<div style='font-size:10px;'>");
+            string br = model.Cerceve switch
+            {
+                0 => "<br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+                1 => "<br/><br/><br/><br/><br/><br/><br/>",
+                2 => "<br/><br/><br/><br/><br/><br/><br/>",
+                3 => "<br/><br/><br/><br/><br/>",
+                4 => "<br/><br/><br/><br/><br/><br/><br/>",
+                5 => "<br/><br/><br/><br/><br/><br/><br/>",
+                _ => "<br/><br/><br/><br/><br/><br/><br/>"
+            };
+            sb.AppendLine($"{br}");
             sb.AppendLine($"{model.Content1}");
             if (model.RuhsatTuru?.Name == "Gayrisıhhi Müessese")
             {
@@ -197,8 +274,8 @@ namespace Utilities.Helper
                 .outer-border {
                     width: 100%;
                     max-width: 790px;
-                    min-height: 1000px;
-                    height: 1000px;
+                    min-height: 1030px;
+                    height: 1030px;
                     margin: 0 auto;
                     border: 1px solid #1D4EA4;
                     box-sizing: border-box;
@@ -216,6 +293,56 @@ namespace Utilities.Helper
                     padding: 25px;
                     box-sizing: border-box;
                     position: relative;
+                }
+                .frame1 {
+                  min-height: 930px;
+                  height: 930px;
+                  position: relative;
+                  padding: 40px;
+                  margin: 5px;
+                  border: 10px solid #b8860b;
+                  border-radius: 20px;
+                  box-shadow: inset 0 0 20px #b8860b;
+                }
+                .frame2 {
+                  min-height: 930px;
+                  height: 930px;
+                  position: relative;
+                  padding: 40px;
+                  margin: 5px;
+                  border: 8px double #2f4f4f;
+                  border-radius: 15px;
+                  box-shadow: inset 0 0 15px #2f4f4f;
+                }
+                .frame3 {
+                  min-height: 900px;
+                  height: 900px;
+                  position: relative;
+                  padding: 40px;
+                  margin: 20px;
+                  border: 14px groove goldenrod;
+                  border-radius: 10px;
+                  box-shadow: inset 0 0 30px goldenrod;
+                }
+                .frame4 {
+                    min-height: 900px;
+                    height: 900px;
+                    position: relative;
+                    padding: 40px;
+                    border-width: 30px;
+                    border-style: solid;
+                    border-image-source: url('https://rn-app-jet.vercel.app/layout-frame/gold.jpg');
+                    border-image-slice: 30;
+                }
+                .frame5 {
+                    min-height: 900px;
+                    height: 900px;
+                    position: relative;
+                    padding: 40px;
+                    border-width: 30px;
+                    border-style: solid;
+                    border-image-source: url('https://rn-app-jet.vercel.app/layout-frame/black.png');
+                    border-image-slice: 80;
                 }
                 .logo {
                     position: absolute;
@@ -276,7 +403,23 @@ namespace Utilities.Helper
             sb.AppendLine("</style>");
             sb.AppendLine("</head><body>");
 
-            sb.AppendLine("<div class='outer-border'><div class='main-border'><div class='inner-border'>");
+            if (model.Cerceve == 0)
+            {
+                sb.AppendLine("<div class='outer-border'><div class='main-border'><div class='inner-border'>");
+            }
+            else
+            {
+                string frameClass = model.Cerceve switch
+                {
+                    1 => "frame1",
+                    2 => "frame2",
+                    3 => "frame3",
+                    4 => "frame4",
+                    5 => "frame5",
+                    _ => "frame1"
+                };
+                sb.AppendLine($"<div class='{frameClass}'>");
+            }
 
             sb.AppendLine($"<img src='{logoUrl}' class='logo' alt='Logo' />");
 
@@ -370,6 +513,17 @@ namespace Utilities.Helper
             sb.AppendLine("</div>");
 
             sb.AppendLine("<div style='font-size:10px;'>");
+            string br = model.Cerceve switch
+            {
+                0 => "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+                1 => "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+                2 => "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+                3 => "<br/><br/><br/><br/><br/><br/><br/><br/>",
+                4 => "<br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+                5 => "<br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+                _ => "<br/><br/><br/><br/><br/><br/><br/><br/><br/>"
+            };
+            sb.AppendLine($"{br}");
             sb.AppendLine($"{model.Content1}");
             if (model.RuhsatTuru?.Name == "Gayrisıhhi Müessese")
             {
@@ -541,6 +695,7 @@ namespace Utilities.Helper
         public string Content4 { get; set; }
         public string Paraf { get; set; }
         public string ParafTitle { get; set; }
+        public int? Cerceve { get; set; }
     }
 
     public class FaaliyetKonusuDto
